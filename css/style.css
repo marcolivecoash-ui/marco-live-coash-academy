@@ -1170,3 +1170,10 @@ html[data-theme="light"] .site-footer {
   }
   html[data-theme="light"] .site-header .nav a { color: #40546b; }
 }
+
+
+/* Clearly visible payment receipt upload control */
+#paymentReceipt{display:block!important;width:100%;min-height:58px;padding:12px!important;color:var(--text,#fff)!important;background:rgba(20,38,60,.72)!important;border:1px solid rgba(80,190,255,.55)!important;border-radius:14px!important;cursor:pointer}
+#paymentReceipt::file-selector-button{margin-inline-end:14px;padding:10px 16px;color:#fff;background:linear-gradient(135deg,#087cf0,#08b9d6);border:0;border-radius:10px;font:inherit;font-weight:700;cursor:pointer}
+#paymentReceipt:focus-visible{outline:2px solid #22c8ff;outline-offset:3px}
+html[data-theme="light"] #paymentReceipt{color:#142238!important;background:rgba(255,255,255,.9)!important}
