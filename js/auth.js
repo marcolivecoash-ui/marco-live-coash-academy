@@ -132,6 +132,10 @@
       dropdown.className = "profile-dropdown";
       dropdown.innerHTML = '<div class="profile-email"></div><a href="account.html" data-en="Manage account" data-ar="إدارة الحساب">Manage account</a><button type="button" id="menuSignOut" data-en="Sign out" data-ar="تسجيل الخروج">Sign out</button>';
       dropdown.querySelector(".profile-email").textContent = user.email || displayName;
+      const pageLang = document.documentElement.lang === "ar" ? "ar" : "en";
+      dropdown.querySelectorAll("[data-en][data-ar]").forEach((item) => {
+        item.textContent = item.dataset[pageLang];
+      });
       profileMenu.append(trigger, dropdown);
       headerActions.appendChild(profileMenu);
 
@@ -166,6 +170,8 @@
     const accountForm = document.getElementById("accountForm");
     if (accountForm) {
       const nameField = document.getElementById("accountName");
+      const emailField = document.getElementById("accountEmail");
+      if (emailField) emailField.value = session.user.email || "";
       const accountStatus = document.getElementById("accountStatus");
       const metadata = session.user.user_metadata || {};
       nameField.value = metadata.full_name || metadata.name || "";
