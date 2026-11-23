@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>محرر المحتوى | Marco Live Coach</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .editor-wrap{max-width:1180px;margin:0 auto;padding:42px 20px 80px}
+    .editor-head{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:24px}
+    .editor-panel{padding:24px;border:1px solid var(--border);border-radius:22px;background:rgba(255,255,255,.045);backdrop-filter:blur(24px);box-shadow:inset 0 1px rgba(255,255,255,.12),0 14px 38px rgba(0,0,0,.12);margin-bottom:20px}
+    .editor-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+    .editor-field{display:grid;gap:7px}.editor-field.full{grid-column:1/-1}
+    .editor-field label{font-weight:650}
+    .editor-field input,.editor-field select,.editor-field textarea{width:100%;box-sizing:border-box;padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:rgba(5,12,24,.35);color:var(--text);font:inherit}
+    html[data-theme="light"] .editor-field input,html[data-theme="light"] .editor-field select,html[data-theme="light"] .editor-field textarea{background:rgba(255,255,255,.75);color:var(--text)}
+    .editor-field textarea{min-height:105px;resize:vertical}
+    .editor-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+    .editor-list{display:grid;gap:12px}.editor-item{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;padding:15px;border:1px solid var(--border);border-radius:15px;background:rgba(255,255,255,.035)}
+    .editor-item small{display:block;color:var(--muted);margin-top:5px;overflow-wrap:anywhere}
+    .editor-item-actions{display:flex;gap:8px;flex-wrap:wrap}.editor-item-actions button{border:1px solid var(--border);border-radius:10px;padding:8px 12px;background:rgba(255,255,255,.08);color:var(--text);cursor:pointer;font:inherit}
+    .editor-status{color:var(--muted);min-height:24px;margin-top:12px}
+    .editor-help{color:var(--muted);line-height:1.8}
+    @media(max-width:700px){.editor-grid{grid-template-columns:1fr}.editor-field.full{grid-column:auto}.editor-panel{padding:18px}}
+  </style>
+</head>
+<body>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="logo" href="index.html">MARCO <span>LIVE COACH</span></a>
+    <nav class="nav" id="nav"><a href="index.html">الموقع</a><a href="admin-dashboard.html">لوحة الإدارة</a><a class="active" href="editor-dashboard.html">محرر المحتوى</a></nav>
+    <div class="header-actions"><button class="theme-toggle" id="themeToggle" type="button">☀</button><button class="lang-btn" id="signOutBtn" type="button">تسجيل الخروج</button><button class="menu-btn" id="menuBtn" type="button">☰</button></div>
+  </div>
+</header>
+<main class="editor-wrap">
+  <div class="editor-head"><div><span class="eyebrow">MARCO LIVE COACH</span><h1>محرر محتوى الموقع</h1><p id="editorIdentity" class="editor-help">جاري التحقق من صلاحية Editor...</p></div><a class="btn btn-outline" href="index.html">معاينة الموقع ↗</a></div>
+  <section class="editor-panel">
+    <h2 id="formTitle">إضافة عنصر محتوى</h2>
+    <p class="editor-help">استخدم مفتاحًا فريدًا مثل <code>home.hero.title</code>. النصوص تدعم العربي والإنجليزي، والصور تُرفع إلى مساحة تخزين الموقع.</p>
+    <form id="contentForm">
+      <div class="editor-grid">
+        <div class="editor-field"><label for="contentKey">مفتاح المحتوى (Key)</label><input id="contentKey" required placeholder="home.hero.title"></div>
+        <div class="editor-field"><label for="contentPage">الصفحة</label><select id="contentPage"><option value="home">الرئيسية</option><option value="about">من أنا</option><option value="services">الخدمات</option><option value="process">طريقة العمل</option><option value="contact">التواصل</option><option value="booking">الحجز</option><option value="global">عام</option></select></div>
+        <div class="editor-field"><label for="contentType">نوع المحتوى</label><select id="contentType"><option value="text">نص</option><option value="icon">أيقونة</option><option value="image">صورة</option></select></div>
+        <div class="editor-field"><label for="contentImage">رفع صورة</label><input id="contentImage" type="file" accept="image/*"></div>
+        <div class="editor-field full"><label for="valueAr">المحتوى بالعربي / رابط الصورة</label><textarea id="valueAr" placeholder="اكتب النص العربي أو اتركه فارغًا للصورة"></textarea></div>
+        <div class="editor-field full"><label for="valueEn">المحتوى بالإنجليزي / رابط الصورة</label><textarea id="valueEn" placeholder="اكتب النص الإنجليزي أو اتركه فارغًا للصورة"></textarea></div>
+      </div>
+      <div class="editor-actions"><button class="btn btn-primary" type="submit" id="saveContentBtn">حفظ المحتوى</button><button class="btn btn-outline" type="button" id="newContentBtn">عنصر جديد</button></div>
+    </form>
+    <p class="editor-status" id="editorStatus" role="status"></p>
+  </section>
+  <section class="editor-panel">
+    <h2>المحتوى المحفوظ</h2>
+    <div class="editor-list" id="contentList"><div class="editor-help">جاري تحميل المحتوى...</div></div>
+  </section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/editor.js"></script>
+<script>
+document.documentElement.dataset.theme=localStorage.getItem('marco-theme')||'dark';
+const themeToggle=document.getElementById('themeToggle');
+const syncTheme=()=>themeToggle.textContent=document.documentElement.dataset.theme==='light'?'☾':'☀';
+syncTheme();themeToggle.addEventListener('click',()=>{document.documentElement.dataset.theme=document.documentElement.dataset.theme==='light'?'dark':'light';localStorage.setItem('marco-theme',document.documentElement.dataset.theme);syncTheme();});
+document.getElementById('menuBtn').addEventListener('click',()=>document.getElementById('nav').classList.toggle('active'));
+</script>
+</body>
+</html>
