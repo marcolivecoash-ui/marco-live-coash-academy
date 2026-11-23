@@ -1434,3 +1434,60 @@ html[dir="ltr"] .hero-feature{text-align:left;direction:ltr}
   .site-header .logo{font-size:14px}
   .site-header .header-actions .header-booking{display:none}
 }
+
+
+/* Site-wide two-row navigation with a clear divider */
+@media(min-width:761px){
+  .site-header .header-inner{
+    display:grid!important;
+    grid-template-columns:1fr auto;
+    grid-template-areas:"brand actions" "navigation navigation";
+    align-items:center;
+    column-gap:24px;
+    row-gap:0;
+    padding-top:12px;
+    padding-bottom:10px;
+  }
+  .site-header .header-inner > .logo{grid-area:brand;justify-self:start}
+  .site-header .header-inner > .header-actions{grid-area:actions;justify-self:end}
+  .site-header .header-inner > .nav{
+    grid-area:navigation;
+    width:100%;
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    grid-template-rows:auto auto;
+    justify-items:center;
+    align-items:center;
+    gap:0;
+    margin-top:10px;
+    padding:7px 4px 0;
+    border:0;
+    border-top:1px solid rgba(115,190,235,.28);
+    border-radius:0;
+    background:transparent!important;
+    box-shadow:none!important;
+    -webkit-backdrop-filter:none;
+    backdrop-filter:none;
+  }
+  .site-header .header-inner > .nav a{
+    width:100%;
+    min-height:34px;
+    justify-content:center;
+    padding:7px 8px;
+    white-space:nowrap;
+    font-size:clamp(12px,1vw,14px);
+    background:transparent!important;
+    box-shadow:none!important;
+  }
+  .site-header .header-inner > .nav a:nth-child(n+4){
+    border-top:1px solid rgba(115,190,235,.16);
+  }
+}
+@media(max-width:760px){
+  .site-header .header-inner > .nav{
+    display:none;
+  }
+  .site-header .header-inner > .nav.active{
+    display:flex;
+  }
+}
