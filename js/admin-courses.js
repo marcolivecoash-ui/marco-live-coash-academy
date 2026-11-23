@@ -21,14 +21,6 @@
   const {data:{user}}=await client.auth.getUser();
   const {data:c,error}=await client.from("courses").insert({title_ar:$("titleAr").value.trim(),title_en:$("titleEn").value.trim()||null,description_ar:$("descriptionAr").value.trim()||null,description_en:$("descriptionEn").value.trim()||null,price_egp:Number($("priceEgp").value),created_by:user.id}).select("id").single();
   if(error){$("courseMessage").textContent="تعذر إضافة الكورس: "+error.message;button.disabled=false;return;}
-  const image=$("thumbnail").files[0];
-  if(image){if(!["image/jpeg","image/png","image/webp"].includes(image.type)||image.size>5*1024*1024){$("courseMessage").textContent="صورة الغلاف يجب أن تكون JPG/PNG/WEBP وأقل من 5MB. تم إنشاء الكورس كمسودة.";button.disabled=false;await loadCourses();return;}
-   const ext=image.type==="image/png"?"png":image.type==="image/webp"?"webp":"jpg",path=c.id+"/cover."+ext;
-   const {error:upErr}=await client.storage.from("course-videos").upload(path,image,{upsert:true,contentType:image.type});
-   if(upErr){$("courseMessage").textContent="تم إنشاء الكورس لكن تعذر رفع الغلاف: "+upErr.message;button.disabled=false;await loadCourses();return;}
-   // The bucket is private; do not store a public URL. Thumbnail path is a private storage key.
-   await client.from("courses").update({thumbnail_path:path}).eq("id",c.id);
-  }
   $("courseForm").reset();$("courseMessage").textContent="تم إنشاء الكورس كمسودة. أضف الدروس ثم انشره.";button.disabled=false;await loadCourses();
  });
  $("courseList").addEventListener("click",async e=>{
