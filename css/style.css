@@ -1088,3 +1088,85 @@ html[data-theme="light"] .notice { color: #94600a; }
 @media (prefers-reduced-motion: reduce) {
   .site-header .nav a::after { transition: none; }
 }
+
+
+/* Navigation polish: show the underline only while interacting */
+.site-header .nav a::after {
+  width: 100%;
+  height: 1px;
+  opacity: 0;
+  transform: scaleX(0);
+  transform-origin: center;
+  background: linear-gradient(90deg, transparent, rgba(40,217,255,.82), transparent);
+  box-shadow: 0 0 7px rgba(40,217,255,.16);
+}
+.site-header .nav a:hover::after,
+.site-header .nav a:focus-visible::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+.site-header .nav a.active::after {
+  opacity: 0;
+  transform: scaleX(0);
+}
+html[dir="rtl"] .site-header .nav a::after { transform-origin: center; }
+
+/* Refined light liquid glass: brighter depth, soft edge reflections */
+html[data-theme="light"] .site-header {
+  background:
+    linear-gradient(125deg,rgba(255,255,255,.82),rgba(248,252,255,.62) 48%,rgba(255,255,255,.76)) padding-box,
+    linear-gradient(110deg,rgba(255,255,255,.95),rgba(94,173,210,.24) 24%,rgba(255,255,255,.88) 52%,rgba(123,157,205,.2) 78%,rgba(255,255,255,.92)) border-box;
+  border: 1px solid transparent;
+  -webkit-backdrop-filter: blur(30px) saturate(175%);
+  backdrop-filter: blur(30px) saturate(175%);
+  box-shadow: 0 18px 48px rgba(50,83,112,.13),inset 0 1px 0 rgba(255,255,255,.98),inset 0 -1px 0 rgba(116,158,190,.08);
+}
+html[data-theme="light"] .site-header::before {
+  background:
+    radial-gradient(ellipse at 0% 50%,rgba(91,196,225,.12),transparent 25%),
+    radial-gradient(ellipse at 100% 50%,rgba(139,164,224,.10),transparent 25%),
+    linear-gradient(180deg,rgba(255,255,255,.72),transparent 42%,rgba(255,255,255,.16));
+  opacity: .8;
+}
+html[data-theme="light"] .site-header::after { opacity: .22; }
+
+html[data-theme="light"] :where(.stat,.card,.highlight-box,.form-card,.contact-item,.cta,.payment-box,.profile-dropdown,.theme-toggle,.lang-btn,.menu-btn,.btn-outline,.form-group input,.form-group select,.form-group textarea) {
+  -webkit-backdrop-filter: blur(26px) saturate(170%);
+  backdrop-filter: blur(26px) saturate(170%);
+  border-color: rgba(93,133,164,.19);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.96),inset 0 -1px 0 rgba(113,153,184,.07),0 12px 30px rgba(49,82,110,.075);
+}
+html[data-theme="light"] :where(.stat,.card,.form-card,.contact-item,.cta,.payment-box) {
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.86),rgba(255,255,255,.56)),
+    rgba(238,247,253,.52);
+}
+html[data-theme="light"] .highlight-box {
+  background: linear-gradient(145deg,rgba(255,255,255,.9),rgba(229,243,251,.72));
+}
+html[data-theme="light"] .form-group input,
+html[data-theme="light"] .form-group select,
+html[data-theme="light"] .form-group textarea {
+  background: rgba(255,255,255,.72);
+}
+html[data-theme="light"] .btn-outline,
+html[data-theme="light"] .theme-toggle,
+html[data-theme="light"] .lang-btn,
+html[data-theme="light"] .menu-btn {
+  background: linear-gradient(145deg,rgba(255,255,255,.82),rgba(241,248,253,.62));
+}
+html[data-theme="light"] .site-footer {
+  -webkit-backdrop-filter: blur(20px) saturate(155%);
+  backdrop-filter: blur(20px) saturate(155%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.8);
+}
+@media (max-width: 700px) {
+  html[data-theme="light"] .site-header .nav {
+    background: rgba(250,253,255,.86);
+    border-color: rgba(93,133,164,.2);
+    box-shadow: 0 16px 40px rgba(49,82,110,.13),inset 0 1px 0 rgba(255,255,255,.96);
+    -webkit-backdrop-filter: blur(28px) saturate(175%);
+    backdrop-filter: blur(28px) saturate(175%);
+  }
+  html[data-theme="light"] .site-header .nav a { color: #40546b; }
+}
