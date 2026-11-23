@@ -29,10 +29,10 @@ const start=async()=>{
  else headerActions.insertBefore(startBtn,headerActions.firstChild);
 
  const toolbar=document.createElement("div");toolbar.id="marco-editor-toolbar";
- toolbar.innerHTML='<button id="marco-section-add">＋ إضافة قسم</button><button id="marco-image-add">＋ إضافة صورة</button><button id="marco-editor-save" class="save">حفظ ونشر</button><button id="marco-editor-cancel" class="cancel">إلغاء</button><span id="marco-editor-status">محرر الصفحة جاهز</span>';
+ toolbar.innerHTML='<button id="marco-section-add">＋ إضافة قسم</button><button id="marco-image-add">＋ إضافة صورة</button><select id="marco-image-size" title="حجم الصورة" style="display:none"><option value="100">الحجم: 100%</option><option value="75">75%</option><option value="50">50%</option><option value="25">25%</option></select><select id="marco-image-align" title="مكان الصورة" style="display:none"><option value="center">توسيط</option><option value="right">يمين</option><option value="left">يسار</option></select><select id="marco-image-effect" title="تأثير الصورة" style="display:none"><option value="none">بدون تأثير</option><option value="rounded">زوايا دائرية</option><option value="shadow">ظل</option><option value="glow">توهج</option><option value="grayscale">أبيض وأسود</option></select><button id="marco-image-replace" style="display:none">استبدال</button><button id="marco-image-remove" style="display:none;background:#a83248;color:white">حذف الصورة</button><button id="marco-editor-save" class="save">حفظ ونشر</button><button id="marco-editor-cancel" class="cancel">إلغاء</button><span id="marco-editor-status">محرر الصفحة جاهز</span>';
  document.body.appendChild(toolbar);
- const addBtn=toolbar.querySelector("#marco-section-add"),imageAddBtn=toolbar.querySelector("#marco-image-add"),saveBtn=toolbar.querySelector("#marco-editor-save"),cancelBtn=toolbar.querySelector("#marco-editor-cancel"),status=toolbar.querySelector("#marco-editor-status");
- const originals=new Map();let active=false;let selectedImage=null;let selectedSection=null;
+ const addBtn=toolbar.querySelector("#marco-section-add"),imageAddBtn=toolbar.querySelector("#marco-image-add"),imageSize=toolbar.querySelector("#marco-image-size"),imageAlign=toolbar.querySelector("#marco-image-align"),imageEffect=toolbar.querySelector("#marco-image-effect"),imageReplace=toolbar.querySelector("#marco-image-replace"),imageRemove=toolbar.querySelector("#marco-image-remove"),saveBtn=toolbar.querySelector("#marco-editor-save"),cancelBtn=toolbar.querySelector("#marco-editor-cancel"),status=toolbar.querySelector("#marco-editor-status");
+ const originals=new Map();let active=false;let selectedImage=null;let selectedSection=null;let selectedAnchor=null;let choosingImagePosition=false;
  const imageInput=document.createElement("input");imageInput.type="file";imageInput.accept="image/*";imageInput.hidden=true;document.body.appendChild(imageInput);
  function assignKeys(){
   const nodes=[...main.querySelectorAll("h1,h2,h3,h4,p,li,.eyebrow,.card-icon,.stat strong,.stat span")];
@@ -92,7 +92,12 @@ const start=async()=>{
  }
  startBtn.addEventListener("click",enterEdit);
  cancelBtn.addEventListener("click",()=>{if(confirm("إلغاء كل التعديلات غير المحفوظة؟")){leaveEdit(true);status.textContent="تم إلغاء التعديلات";}});
- imageAddBtn.addEventListener("click",()=>{if(!active)return;selectedImage=null;status.textContent="اختار صورة من جهازك لإضافتها للقسم المحدد";imageInput.click();});
+ imageAddBtn.addEventListener("click",()=>{if(!active)return;selectedImage=null;selectedAnchor=null;choosingImagePosition=true;status.textContent="اضغط على المكان المحدد داخل الصفحة لوضع الصورة هناك";});
+ imageReplace.addEventListener("click",()=>{if(active&&selectedImage)imageInput.click();});
+ function showImageTools(img){const show=!!img;[imageSize,imageAlign,imageEffect,imageReplace,imageRemove].forEach(el=>el.style.display=show?"inline-block":"none");if(!show)return;const width=parseInt(img.style.width)||100;imageSize.value=String([25,50,75,100].includes(width)?width:100);imageAlign.value=img.dataset.marcoAlign||"center";imageEffect.value=img.dataset.marcoEffect||"rounded";}
+ function applyImageTools(){if(!selectedImage)return;const w=Number(imageSize.value);selectedImage.style.width=w+"%";selectedImage.style.maxWidth="100%";selectedImage.style.height="auto";selectedImage.style.display="block";selectedImage.style.margin=imageAlign.value==="left"?"18px auto 18px 0":imageAlign.value==="right"?"18px 0 18px auto":"18px auto";selectedImage.dataset.marcoAlign=imageAlign.value;selectedImage.dataset.marcoEffect=imageEffect.value;selectedImage.style.borderRadius=imageEffect.value==="rounded"?"20px":"0";selectedImage.style.boxShadow=imageEffect.value==="shadow"?"0 16px 40px rgba(0,0,0,.3)":imageEffect.value==="glow"?"0 0 28px rgba(36,201,239,.55)":"none";selectedImage.style.filter=imageEffect.value==="grayscale"?"grayscale(1)":"none";}
+ [imageSize,imageAlign,imageEffect].forEach(el=>el.addEventListener("change",applyImageTools));
+ imageRemove.addEventListener("click",()=>{if(!selectedImage||!confirm("حذف الصورة من الصفحة؟"))return;const wrapper=selectedImage.closest("figure");if(wrapper)wrapper.remove();else selectedImage.remove();selectedImage=null;showImageTools(null);status.textContent="تم حذف الصورة — اضغط حفظ ونشر لتأكيد الحذف";});
  addBtn.addEventListener("click",()=>{
   if(!active)return;
   const section=document.createElement("section");section.className="section";section.dataset.marcoSection="1";
@@ -104,11 +109,12 @@ const start=async()=>{
   addSectionTools();status.textContent="أضفت قسمًا جديدًا — عدّل نصوصه";
  });
  main.addEventListener("click",e=>{
-  if(!active||e.target.closest(".marco-section-tools"))return;
+  if(!active||e.target.closest(".marco-section-tools")||e.target.closest("#marco-editor-toolbar"))return;
   const img=e.target.closest("img[data-marco-image]");
-  if(img&&!img.closest("a,button,form")){selectedImage=img;selectedSection=img.closest("section");status.textContent="اخترت صورة موجودة — اختر صورة بديلة من جهازك";imageInput.click();return;}
+  if(img&&!img.closest("a,button,form")){e.preventDefault();selectedImage=img;selectedSection=img.closest("section");showImageTools(img);status.textContent="الصورة محددة — غيّر الحجم والمكان والتأثير أو احذفها";return;}
   const section=e.target.closest("section");
-  if(section&&main.contains(section)){selectedSection=section;status.textContent="تم تحديد القسم لإضافة الصورة بداخله";}
+  if(section&&main.contains(section)){selectedSection=section;}
+  if(choosingImagePosition){choosingImagePosition=false;selectedAnchor=e.target.closest("h1,h2,h3,h4,p,figure,.card,.highlight-box,.container,section")||section;selectedSection=section||selectedAnchor;status.textContent="تم تحديد مكان الصورة — اختارها من جهازك";imageInput.click();}
  });
  imageInput.addEventListener("change",async()=>{
   if(!imageInput.files||!imageInput.files[0])return;
@@ -123,14 +129,15 @@ const start=async()=>{
   const {data}=client.storage.from("site-media").getPublicUrl(path);
   if(selectedImage){selectedImage.src=data.publicUrl;}
   else{
-   const target=selectedSection&&main.contains(selectedSection)?selectedSection:main;
-   let holder=target.querySelector(":scope > .container");
-   if(!holder){holder=document.createElement("div");holder.className="container";target.appendChild(holder);}
    const figure=document.createElement("figure");figure.style.cssText="margin:24px auto;text-align:center;max-width:100%";
-   const img=document.createElement("img");img.src=data.publicUrl;img.alt="";img.loading="lazy";img.style.cssText="display:block;width:auto;max-width:100%;max-height:620px;height:auto;object-fit:contain;margin:auto;border-radius:20px";
-   figure.appendChild(img);holder.appendChild(figure);selectedImage=img;refs=assignKeys();
+   const img=document.createElement("img");img.src=data.publicUrl;img.alt="";img.loading="lazy";img.style.cssText="display:block;width:100%;max-width:100%;max-height:620px;height:auto;object-fit:contain;margin:18px auto;border-radius:20px";
+   figure.appendChild(img);
+   if(selectedAnchor&&selectedAnchor.isConnected&&selectedAnchor!==main){selectedAnchor.insertAdjacentElement("afterend",figure);}
+   else{const target=selectedSection&&main.contains(selectedSection)?selectedSection:main;let holder=target.querySelector(":scope > .container");if(!holder){holder=document.createElement("div");holder.className="container";target.appendChild(holder);}holder.appendChild(figure);}
+   selectedImage=img;refs=assignKeys();
   }
-  status.textContent="تم رفع الصورة — احفظ لنشرها";imageInput.value="";
+  selectedImage.dataset.marcoImage="1";showImageTools(selectedImage);applyImageTools();
+  status.textContent="تم رفع الصورة — تحكم في حجمها ومكانها وتأثيرها ثم احفظ";imageInput.value="";
  });
  saveBtn.addEventListener("click",async()=>{
   if(!active)return;saveBtn.disabled=true;status.textContent="جاري حفظ الصفحة...";
