@@ -9,6 +9,8 @@
   const list = $("slotList");
   const formMessage = $("formMessage");
   const listMessage = $("listMessage");
+  const bookingList = $("bookingList");
+  const bookingMessage = $("bookingMessage");
   let isAdmin = false;
 
   const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (c) => ({
@@ -123,14 +125,45 @@
     await loadSlots();
   });
 
-  $("refreshBtn").addEventListener("click", loadSlots);
+  async function loadBookings() {
+    if (!bookingList) return;
+    bookingList.innerHTML = '<div class="admin-empty">جاري تحميل طلبات الحجز...</div>';
+    const { data, error } = await client.from("booking_requests")
+      .select("id,customer_name,customer_email,customer_phone,session_type,details,status,created_at,availability_slots(starts_at,ends_at,price_egp)")
+      .order("created_at", { ascending:false });
+    if (error) {
+      bookingList.innerHTML = '<div class="admin-empty">تعذر تحميل طلبات الحجز.</div>';
+      bookingMessage.textContent = error.message;
+      return;
+    }
+    bookingMessage.textContent = "";
+    if (!data || !data.length) {
+      bookingList.innerHTML = '<div class="admin-empty">لا توجد طلبات حجز حتى الآن.</div>';
+      return;
+    }
+    const labels = { awaiting_payment:"في انتظار الدفع", payment_review:"الدفع قيد المراجعة", confirmed:"تم التأكيد", rejected:"مرفوض" };
+    bookingList.innerHTML = data.map((booking) => {
+      const slot = booking.availability_slots || {};
+      return `<article class="slot-item">
+        <div class="slot-meta">
+          <strong>${escapeHtml(booking.customer_name)} · ${escapeHtml(booking.session_type)}</strong>
+          <small>${escapeHtml(booking.customer_email)} · ${escapeHtml(booking.customer_phone)}</small>
+          <small>الموعد: ${slot.starts_at ? escapeHtml(formatDate(slot.starts_at)) : "غير متاح"} · السعر: ${slot.price_egp == null ? "—" : Number(slot.price_egp).toLocaleString("en-US") + " EGP"}</small>
+          ${booking.details ? `<small>التفاصيل: ${escapeHtml(booking.details)}</small>` : ""}
+          <span class="slot-status">${labels[booking.status] || escapeHtml(booking.status)}</span>
+        </div>
+      </article>`;
+    }).join("");
+  }
+
+  $("refreshBtn").addEventListener("click", async () => { await loadSlots(); await loadBookings(); });
   $("signOutBtn").addEventListener("click", async () => {
     const { error } = await client.auth.signOut();
     if (error) alert(error.message);
     else location.replace(LOGIN_URL);
   });
 
-  guard().then((allowed) => { if (allowed) loadSlots(); });
+  guard().then((allowed) => { if (allowed) { loadSlots(); loadBookings(); } });
   client.auth.onAuthStateChange((event) => {
     if (event === "SIGNED_OUT") location.replace(LOGIN_URL);
   });
