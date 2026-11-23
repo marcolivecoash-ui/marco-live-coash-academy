@@ -117,6 +117,18 @@
           adminLink.dataset.ar = "لوحة الأدمن";
           adminLink.textContent = document.documentElement.lang === "ar" ? adminLink.dataset.ar : adminLink.dataset.en;
           homeNav.appendChild(adminLink);
+
+          const { data: isEditor, error: editorCheckError } = await client.rpc("is_marco_editor");
+          if (editorCheckError) {
+            console.error("Editor permission check failed:", editorCheckError);
+          } else if (isEditor) {
+            const editorLink = document.createElement("a");
+            editorLink.href = "editor-dashboard.html";
+            editorLink.dataset.en = "Content Editor";
+            editorLink.dataset.ar = "محرر المحتوى";
+            editorLink.textContent = document.documentElement.lang === "ar" ? editorLink.dataset.ar : editorLink.dataset.en;
+            homeNav.appendChild(editorLink);
+          }
         }
       }
     }
