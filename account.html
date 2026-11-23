@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Account | Marco Live Coach</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="logo" href="index.html">MARCO <span>LIVE COACH</span></a>
+    <nav class="nav" id="nav">
+      <a href="index.html" data-en="Home" data-ar="الرئيسية">Home</a>
+      <a href="services.html" data-en="Services" data-ar="الخدمات">Services</a>
+      <a href="booking.html" data-en="Booking" data-ar="الحجز">Booking</a>
+    </nav>
+    <div class="header-actions"><button class="lang-btn" id="langBtn">العربية</button><button class="menu-btn" id="menuBtn">☰</button></div>
+  </div>
+</header>
+<main>
+  <section class="page-hero"><div class="container">
+    <span class="eyebrow" data-en="YOUR PROFILE" data-ar="ملفك الشخصي">YOUR PROFILE</span>
+    <h1 data-en="Manage Your Account" data-ar="إدارة حسابك">Manage Your Account</h1>
+    <p data-en="Update the name shown on your profile." data-ar="حدّث الاسم الظاهر في ملفك الشخصي.">Update the name shown on your profile.</p>
+  </div></section>
+  <section class="section"><div class="container">
+    <form class="form-card" id="accountForm">
+      <div class="form-group"><label for="accountEmail" data-en="Email address" data-ar="البريد الإلكتروني">Email address</label><input id="accountEmail" type="email" disabled></div>
+      <div class="form-group" style="margin-top:20px"><label for="accountName" data-en="Display name" data-ar="الاسم الظاهر">Display name</label><input id="accountName" type="text" maxlength="80" placeholder="Your name"></div>
+      <button class="btn btn-primary" type="submit" style="margin-top:22px;width:100%" data-en="Save changes" data-ar="حفظ التغييرات">Save changes</button>
+      <p id="accountStatus" class="notice" role="status"></p>
+    </form>
+  </div></section>
+</main>
+<footer class="site-footer"><div class="container footer-inner"><a class="logo" href="index.html">MARCO <span>LIVE COACH</span></a><p>© 2026 Marco Live Coach. All rights reserved.</p></div></footer>
+<script src="js/app.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const fillEmail = () => { if (window.marcoSupabase) window.marcoSupabase.auth.getUser().then(({data}) => { const field=document.getElementById("accountEmail"); if(field && data.user) field.value=data.user.email || ""; }); };
+  setTimeout(fillEmail, 700);
+});
+</script>
+</body>
+</html>
