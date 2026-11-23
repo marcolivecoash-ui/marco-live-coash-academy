@@ -100,7 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const message = currentLang === "ar"
         ? `طلب حجز جلسة جديدة\n\nالاسم: ${name}\nالبريد: ${email}\nالهاتف: ${phone}\nنوع الجلسة: ${session}\nالتاريخ المفضل: ${date}\nالتفاصيل: ${details}`
         : `New Booking Request\n\nName: ${name}\nEmail: ${email}\nPhone: ${phone}\nSession: ${session}\nPreferred Date: ${date}\nDetails: ${details}`;
-      const whatsappNumber = "201000000000";
+      if (!formData.get("slot_id")) { alert(currentLang === "ar" ? "من فضلك اختار موعدًا متاحًا أولًا." : "Please select an available appointment first."); return; }\n      const whatsappNumber = "201000000000";
       window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, "_blank");
     });
   }
