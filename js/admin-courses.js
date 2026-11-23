@@ -81,10 +81,16 @@
     const cards = await Promise.all(data.map(async (purchase) => {
       let receipt = "<small>لا يوجد إيصال</small>";
       if (purchase.payment_receipt_path) {
-        const { data: signed } = await client.storage.from("payment-receipts")
+        const { data: signed, error: signedError } = await client.storage.from("payment-receipts")
           .createSignedUrl(purchase.payment_receipt_path, 3600);
         if (signed && signed.signedUrl) {
-          receipt = '<a href="' + esc(signed.signedUrl) + '" target="_blank" rel="noopener noreferrer">عرض إيصال الدفع</a>';
+          const safeUrl = esc(signed.signedUrl);
+          receipt = '<a href="' + safeUrl + '" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin:10px 0">' +
+            '<img src="' + safeUrl + '" alt="إيصال الدفع" loading="lazy" style="display:block;max-width:100%;width:320px;max-height:420px;object-fit:contain;border:1px solid var(--border);border-radius:12px;background:#111;padding:5px">' +
+            '<span>فتح الإيصال بالحجم الكامل</span></a>';
+        } else {
+          receipt = '<small style="color:#ff9292">تعذر تحميل الإيصال: ' +
+            esc(signedError?.message || "تحقق من صلاحيات Storage ومسار الملف") + '</small>';
         }
       }
       const canReview = ["awaiting_payment", "payment_review"].includes(purchase.status);
