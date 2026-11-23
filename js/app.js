@@ -19,6 +19,24 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   document.head.appendChild(supabaseScript);
 
+
+  // Gentle reveal animations as sections enter the viewport.
+  const motionTargets = document.querySelectorAll(
+    ".hero .eyebrow, .hero h1, .hero p, .hero-buttons, .stat, .section-header, .card, .step, .highlight-box, .form-card, .contact-item, .cta"
+  );
+  if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches && "IntersectionObserver" in window) {
+    motionTargets.forEach((element) => element.classList.add("reveal"));
+    const revealObserver = new IntersectionObserver((entries, observer) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-visible");
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: "0px 0px -35px 0px" });
+    motionTargets.forEach((element) => revealObserver.observe(element));
+  }
+
   const langBtn = document.getElementById("langBtn");
   const menuBtn = document.getElementById("menuBtn");
   const nav = document.getElementById("nav");
