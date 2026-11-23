@@ -1563,3 +1563,50 @@ html[dir="ltr"] .hero-feature{text-align:left;direction:ltr}
   .site-header .header-inner > .nav.active{display:flex}
   .site-header .header-inner > .nav a{width:100%;padding:11px 13px}
 }
+
+
+/* Stack multi-word header labels and the brand on separate lines */
+.site-header .header-inner > .logo{
+  display:flex!important;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:center;
+  gap:1px;
+  line-height:1.05;
+  white-space:normal!important;
+}
+.site-header .header-inner > .logo span{
+  display:block!important;
+  margin:0;
+  line-height:1.05;
+}
+@media(min-width:1001px){
+  .site-header .header-inner > .nav a{
+    max-width:86px;
+    min-height:42px;
+    white-space:normal!important;
+    text-align:center;
+    line-height:1.25;
+    text-wrap:balance;
+    justify-content:center;
+    padding:6px 4px;
+  }
+  .site-header .header-inner > .header-actions .header-booking{
+    max-width:105px;
+    white-space:normal;
+    text-align:center;
+    line-height:1.2;
+    padding:8px 10px;
+  }
+}
+@media(max-width:1000px){
+  .site-header .header-inner > .logo{align-items:flex-start}
+  .site-header .header-inner > .nav a{
+    white-space:normal;
+    line-height:1.35;
+  }
+  .site-header .header-inner > .header-actions .header-booking{
+    white-space:normal;
+    line-height:1.2;
+  }
+}
