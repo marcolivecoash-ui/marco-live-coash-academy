@@ -130,7 +130,7 @@
     if (!bookingList) return;
     bookingList.innerHTML = '<div class="admin-empty">جاري تحميل طلبات الحجز...</div>';
     const { data, error } = await client.from("booking_requests")
-      .select("id,customer_name,customer_email,customer_phone,session_type,details,status,created_at,availability_slots(starts_at,ends_at,price_egp)")
+      .select("id,customer_name,customer_email,customer_phone,session_type,details,status,created_at,payment_receipt_path,receipt_check_status,availability_slots(starts_at,ends_at,price_egp)")
       .order("created_at", { ascending:false });
     if (error) {
       bookingList.innerHTML = '<div class="admin-empty">تعذر تحميل طلبات الحجز.</div>';
@@ -143,15 +143,29 @@
       return;
     }
     const labels = { awaiting_payment:"في انتظار الدفع", payment_review:"الدفع قيد المراجعة", confirmed:"تم التأكيد", rejected:"مرفوض" };
-    bookingList.innerHTML = data.map((booking) => {
+    const bookingCards = await Promise.all(data.map(async (booking) => {
       const slot = booking.availability_slots || {};
       const canReview = ["awaiting_payment", "payment_review"].includes(booking.status);
+      let receiptLink = "";
+      if (booking.payment_receipt_path) {
+        const { data: signed, error: signedError } = await client.storage
+          .from("payment-receipts")
+          .createSignedUrl(booking.payment_receipt_path, 3600);
+        if (!signedError && signed?.signedUrl) {
+          receiptLink = `<a href="${escapeHtml(signed.signedUrl)}" target="_blank" rel="noopener noreferrer">عرض إيصال التحويل</a>`;
+        } else {
+          receiptLink = '<small>تعذر فتح إيصال التحويل.</small>';
+        }
+      } else {
+        receiptLink = '<small>لم يتم رفع إيصال بعد.</small>';
+      }
       return `<article class="slot-item">
         <div class="slot-meta">
           <strong>${escapeHtml(booking.customer_name)} · ${escapeHtml(booking.session_type)}</strong>
           <small>${escapeHtml(booking.customer_email)} · ${escapeHtml(booking.customer_phone)}</small>
           <small>الموعد: ${slot.starts_at ? escapeHtml(formatDate(slot.starts_at)) : "غير متاح"} · السعر: ${slot.price_egp == null ? "—" : Number(slot.price_egp).toLocaleString("en-US") + " EGP"}</small>
           ${booking.details ? `<small>التفاصيل: ${escapeHtml(booking.details)}</small>` : ""}
+          ${receiptLink}
           <span class="slot-status">${labels[booking.status] || escapeHtml(booking.status)}</span>
         </div>
         ${canReview ? `<div class="slot-actions">
@@ -159,7 +173,8 @@
           <button type="button" class="danger" data-booking-review="rejected" data-id="${escapeHtml(booking.id)}">رفض الطلب</button>
         </div>` : ""}
       </article>`;
-    }).join("");
+    }));
+    bookingList.innerHTML = bookingCards.join("");
   }
 
   bookingList?.addEventListener("click", async (event) => {
