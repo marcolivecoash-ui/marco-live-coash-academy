@@ -101,6 +101,26 @@
     }
 
     document.documentElement.style.visibility = "visible";
+
+    // Show the admin dashboard link on the homepage only, and only to admins.
+    const isHomePage = window.location.pathname.endsWith("/") || window.location.pathname.endsWith("/index.html");
+    if (isHomePage) {
+      const homeNav = document.getElementById("nav");
+      if (homeNav) {
+        const { data: isAdmin, error: adminCheckError } = await client.rpc("is_marco_admin");
+        if (adminCheckError) {
+          console.error("Admin permission check failed:", adminCheckError);
+        } else if (isAdmin) {
+          const adminLink = document.createElement("a");
+          adminLink.href = "admin-dashboard.html";
+          adminLink.dataset.en = "Admin Dashboard";
+          adminLink.dataset.ar = "لوحة الأدمن";
+          adminLink.textContent = document.documentElement.lang === "ar" ? adminLink.dataset.ar : adminLink.dataset.en;
+          homeNav.appendChild(adminLink);
+        }
+      }
+    }
+
     const headerActions = document.querySelector(".header-actions");
     if (headerActions && !document.getElementById("profileMenu")) {
       const user = session.user;
