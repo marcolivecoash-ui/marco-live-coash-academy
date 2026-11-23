@@ -102,19 +102,56 @@
 
     document.documentElement.style.visibility = "visible";
     const headerActions = document.querySelector(".header-actions");
-    if (headerActions && !document.getElementById("signOutBtn")) {
-      const email = document.createElement("span");
-      email.className = "auth-user";
-      email.textContent = session.user.email || "Signed in";
-      email.title = session.user.email || "";
-      headerActions.appendChild(email);
+    if (headerActions && !document.getElementById("profileMenu")) {
+      const user = session.user;
+      const metadata = user.user_metadata || {};
+      const avatarUrl = metadata.avatar_url || metadata.picture || "";
+      const displayName = metadata.full_name || metadata.name || user.email || "User";
+      const profileMenu = document.createElement("div");
+      profileMenu.className = "profile-menu";
+      profileMenu.id = "profileMenu";
 
-      const signOut = document.createElement("button");
-      signOut.id = "signOutBtn";
-      signOut.className = "lang-btn";
-      signOut.type = "button";
-      signOut.textContent = "تسجيل الخروج";
-      signOut.addEventListener("click", async () => {
+      const trigger = document.createElement("button");
+      trigger.className = "profile-trigger";
+      trigger.type = "button";
+      trigger.setAttribute("aria-label", "Open account menu");
+      trigger.setAttribute("aria-expanded", "false");
+      trigger.setAttribute("aria-haspopup", "true");
+      if (avatarUrl) {
+        const avatar = document.createElement("img");
+        avatar.src = avatarUrl;
+        avatar.alt = "";
+        avatar.referrerPolicy = "no-referrer";
+        avatar.onerror = () => { trigger.textContent = (displayName.trim()[0] || "U").toUpperCase(); };
+        trigger.appendChild(avatar);
+      } else {
+        trigger.textContent = (displayName.trim()[0] || "U").toUpperCase();
+      }
+
+      const dropdown = document.createElement("div");
+      dropdown.className = "profile-dropdown";
+      dropdown.innerHTML = '<div class="profile-email"></div><a href="account.html" data-en="Manage account" data-ar="إدارة الحساب">Manage account</a><button type="button" id="menuSignOut" data-en="Sign out" data-ar="تسجيل الخروج">Sign out</button>';
+      dropdown.querySelector(".profile-email").textContent = user.email || displayName;
+      profileMenu.append(trigger, dropdown);
+      headerActions.appendChild(profileMenu);
+
+      const closeMenu = () => {
+        profileMenu.classList.remove("open");
+        trigger.setAttribute("aria-expanded", "false");
+      };
+      trigger.addEventListener("click", (event) => {
+        event.stopPropagation();
+        const isOpen = profileMenu.classList.toggle("open");
+        trigger.setAttribute("aria-expanded", String(isOpen));
+      });
+      document.addEventListener("click", (event) => {
+        if (!profileMenu.contains(event.target)) closeMenu();
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") closeMenu();
+      });
+      dropdown.querySelector("#menuSignOut").addEventListener("click", async () => {
+        const signOut = dropdown.querySelector("#menuSignOut");
         signOut.disabled = true;
         const { error: signOutError } = await client.auth.signOut();
         if (signOutError) {
@@ -124,7 +161,25 @@
           window.location.replace(LOGIN_URL);
         }
       });
-      headerActions.appendChild(signOut);
+    }
+
+    const accountForm = document.getElementById("accountForm");
+    if (accountForm) {
+      const nameField = document.getElementById("accountName");
+      const accountStatus = document.getElementById("accountStatus");
+      const metadata = session.user.user_metadata || {};
+      nameField.value = metadata.full_name || metadata.name || "";
+      accountForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const saveButton = accountForm.querySelector('button[type="submit"]');
+        saveButton.disabled = true;
+        accountStatus.textContent = "جاري حفظ التغييرات...";
+        const { error: updateError } = await client.auth.updateUser({
+          data: { full_name: nameField.value.trim() }
+        });
+        saveButton.disabled = false;
+        accountStatus.textContent = updateError ? "تعذر حفظ التغييرات: " + updateError.message : "تم تحديث بيانات الحساب بنجاح.";
+      });
     }
 
     client.auth.onAuthStateChange((event, updatedSession) => {
