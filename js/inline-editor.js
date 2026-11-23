@@ -13,12 +13,25 @@ const start=async()=>{
  if(layout){const markup=document.documentElement.lang==="ar"?(layout.value_ar||layout.value_en):(layout.value_en||layout.value_ar);if(markup)main.innerHTML=markup;}
  const lang=()=>document.documentElement.lang==="ar"?"ar":"en";
  const css=document.createElement("style");
- css.textContent="#marco-editor-toolbar{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:2147483000;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:7px;max-width:calc(100% - 20px);padding:9px 12px;border:1px solid #ffffff30;border-radius:16px;background:rgba(8,18,35,.93);backdrop-filter:blur(22px);box-shadow:0 12px 38px #0006;color:#fff;font:600 13px system-ui;direction:rtl}#marco-editor-toolbar button{border:0;border-radius:10px;padding:9px 12px;font:700 12px system-ui;cursor:pointer;white-space:nowrap}#marco-editor-toolbar .primary{background:linear-gradient(120deg,#1677ff,#24c9ef);color:#fff}#marco-editor-toolbar .save{display:none;background:#13a36b;color:#fff}#marco-editor-toolbar .cancel{display:none;background:#ffffff20;color:#fff}#marco-editor-status{font-size:11px;color:#b9eaff;max-width:190px}body.marco-edit-mode [data-marco-editable='1']{outline:1px dashed #29d7ff!important;outline-offset:4px;cursor:text;min-width:10px}body.marco-edit-mode [data-marco-image='1']{outline:2px dashed #29d7ff!important;outline-offset:4px;cursor:pointer}body.marco-edit-mode [data-marco-section]{position:relative;outline:1px solid #29d7ff55}body.marco-edit-mode [data-marco-section]>.marco-section-tools{position:absolute;top:8px;inset-inline-end:8px;z-index:50;display:flex;gap:5px} .marco-section-tools button{border:1px solid #ffffff40;background:#101d32;color:white;border-radius:7px;padding:5px 8px;cursor:pointer;font:12px system-ui}#marco-section-add{display:none;background:#6848db;color:#fff}body.marco-edit-mode #marco-section-add{display:inline-block}@media(max-width:600px){#marco-editor-toolbar{top:6px;gap:4px;padding:6px}#marco-editor-toolbar button{padding:8px 9px;font-size:11px}#marco-editor-status{max-width:105px}}";
+ css.textContent="#marco-editor-toolbar{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:2147483000;display:none;flex-wrap:wrap;align-items:center;justify-content:center;gap:7px;max-width:calc(100% - 20px);padding:9px 12px;border:1px solid #ffffff30;border-radius:16px;background:rgba(8,18,35,.93);backdrop-filter:blur(22px);box-shadow:0 12px 38px #0006;color:#fff;font:600 13px system-ui;direction:rtl}body.marco-edit-mode #marco-editor-toolbar{display:flex}#marco-editor-toolbar button{border:0;border-radius:10px;padding:9px 12px;font:700 12px system-ui;cursor:pointer;white-space:nowrap}#marco-editor-toolbar .primary{background:linear-gradient(120deg,#1677ff,#24c9ef);color:#fff}#marco-editor-toolbar .save{display:none;background:#13a36b;color:#fff}#marco-editor-toolbar .cancel{display:none;background:#ffffff20;color:#fff}#marco-editor-status{font-size:11px;color:#b9eaff;max-width:190px}#marco-editor-start.editor-header-btn{border:1px solid rgba(36,201,239,.55);border-radius:11px;padding:9px 13px;background:rgba(22,119,255,.14);color:var(--text,#fff);font:700 12px system-ui;cursor:pointer;white-space:nowrap;backdrop-filter:blur(12px)}#marco-editor-start.editor-header-btn:hover{background:rgba(22,119,255,.25);border-color:#24c9ef}#marco-editor-start.editor-header-btn:disabled{opacity:.8;cursor:default}@media(max-width:600px){#marco-editor-start.editor-header-btn{padding:8px 9px;font-size:11px}}body.marco-edit-mode [data-marco-editable='1']{outline:1px dashed #29d7ff!important;outline-offset:4px;cursor:text;min-width:10px}body.marco-edit-mode [data-marco-image='1']{outline:2px dashed #29d7ff!important;outline-offset:4px;cursor:pointer}body.marco-edit-mode [data-marco-section]{position:relative;outline:1px solid #29d7ff55}body.marco-edit-mode [data-marco-section]>.marco-section-tools{position:absolute;top:8px;inset-inline-end:8px;z-index:50;display:flex;gap:5px} .marco-section-tools button{border:1px solid #ffffff40;background:#101d32;color:white;border-radius:7px;padding:5px 8px;cursor:pointer;font:12px system-ui}#marco-section-add{display:none;background:#6848db;color:#fff}body.marco-edit-mode #marco-section-add{display:inline-block}@media(max-width:600px){#marco-editor-toolbar{top:6px;gap:4px;padding:6px}#marco-editor-toolbar button{padding:8px 9px;font-size:11px}#marco-editor-status{max-width:105px}}";
  document.head.appendChild(css);
+ const headerActions=document.querySelector(".site-header .header-actions");
+ if(!headerActions)return;
+ const startBtn=document.createElement("button");
+ startBtn.type="button";
+ startBtn.id="marco-editor-start";
+ startBtn.className="editor-header-btn";
+ startBtn.textContent="✏️ تحرير";
+ startBtn.title="تحرير محتوى الصفحة";
+ startBtn.setAttribute("aria-label","تحرير محتوى الصفحة");
+ const headerBooking=headerActions.querySelector(".header-booking");
+ if(headerBooking)headerActions.insertBefore(startBtn,headerBooking);
+ else headerActions.insertBefore(startBtn,headerActions.firstChild);
+
  const toolbar=document.createElement("div");toolbar.id="marco-editor-toolbar";
- toolbar.innerHTML='<button id="marco-editor-start" class="primary">✏️ تحرير الصفحة</button><button id="marco-section-add">＋ إضافة قسم</button><button id="marco-editor-save" class="save">حفظ ونشر</button><button id="marco-editor-cancel" class="cancel">إلغاء</button><span id="marco-editor-status">محرر الصفحة جاهز</span>';
+ toolbar.innerHTML='<button id="marco-section-add">＋ إضافة قسم</button><button id="marco-editor-save" class="save">حفظ ونشر</button><button id="marco-editor-cancel" class="cancel">إلغاء</button><span id="marco-editor-status">محرر الصفحة جاهز</span>';
  document.body.appendChild(toolbar);
- const startBtn=toolbar.querySelector("#marco-editor-start"),addBtn=toolbar.querySelector("#marco-section-add"),saveBtn=toolbar.querySelector("#marco-editor-save"),cancelBtn=toolbar.querySelector("#marco-editor-cancel"),status=toolbar.querySelector("#marco-editor-status");
+ const addBtn=toolbar.querySelector("#marco-section-add"),saveBtn=toolbar.querySelector("#marco-editor-save"),cancelBtn=toolbar.querySelector("#marco-editor-cancel"),status=toolbar.querySelector("#marco-editor-status");
  const originals=new Map();let active=false;let selectedImage=null;
  const imageInput=document.createElement("input");imageInput.type="file";imageInput.accept="image/*";imageInput.hidden=true;document.body.appendChild(imageInput);
  function assignKeys(){
@@ -67,7 +80,7 @@ const start=async()=>{
   refs.leaves.forEach(el=>{originals.set(el,{html:el.innerHTML});el.contentEditable="true";el.spellcheck=true;});
   refs.imgs.forEach(img=>originals.set(img,{src:img.src}));
   document.body.classList.add("marco-edit-mode");addSectionTools();
-  startBtn.style.display="none";saveBtn.style.display="inline-block";cancelBtn.style.display="inline-block";
+  startBtn.disabled=true;startBtn.textContent="✏️ وضع التحرير";saveBtn.style.display="inline-block";cancelBtn.style.display="inline-block";
   status.textContent="عدّل النصوص والصور، وأضف أو رتّب الأقسام";
  }
  function leaveEdit(restore){
@@ -75,7 +88,7 @@ const start=async()=>{
   refs.leaves.forEach(el=>el.contentEditable="false");
   main.querySelectorAll(".marco-section-tools").forEach(n=>n.remove());
   document.body.classList.remove("marco-edit-mode");active=false;
-  startBtn.style.display="inline-block";saveBtn.style.display="none";cancelBtn.style.display="none";
+  startBtn.disabled=false;startBtn.textContent="✏️ تحرير";saveBtn.style.display="none";cancelBtn.style.display="none";
  }
  startBtn.addEventListener("click",enterEdit);
  cancelBtn.addEventListener("click",()=>{if(confirm("إلغاء كل التعديلات غير المحفوظة؟")){leaveEdit(true);status.textContent="تم إلغاء التعديلات";}});
