@@ -14,7 +14,7 @@
    const lang=document.documentElement.lang==="ar"?"ar":"en";
    const layout=pageRows.find(x=>x.content_key==="page.layout");
    const main=document.querySelector("main");
-   if(layout&&main){const html=lang==="ar"?(layout.value_ar||layout.value_en):(layout.value_en||layout.value_ar);if(html)main.innerHTML=html;}
+   if(layout&&main){const html=lang==="ar"?(layout.value_ar||layout.value_en):(layout.value_en||layout.value_ar);if(html){const template=document.createElement("div");template.innerHTML=html;if(pageKey==="booking"){["#availableAppointments","#bookingForm"].forEach(selector=>{const current=main.querySelector(selector),saved=template.querySelector(selector);if(current&&saved)saved.replaceWith(current);});}main.innerHTML=template.innerHTML;}}
    pageRows.forEach(item=>{
     if(item.content_key==="page.layout")return;
     const value=lang==="ar"?(item.value_ar||item.value_en):(item.value_en||item.value_ar);
