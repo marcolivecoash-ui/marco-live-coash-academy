@@ -1,0 +1,101 @@
+
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book a Session | Marco Live Coach</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="logo" href="index.html">MARCO <span>LIVE COACH</span></a>
+    <nav class="nav" id="nav">
+      <a href="index.html" data-en="Home" data-ar="الرئيسية">Home</a>
+      <a href="about.html" data-en="About" data-ar="من أنا">About</a>
+      <a href="services.html" data-en="Services" data-ar="الخدمات">Services</a>
+      <a href="process.html" data-en="Process" data-ar="طريقة العمل">Process</a>
+      <a href="contact.html" data-en="Contact" data-ar="التواصل">Contact</a>
+    </nav>
+    <div class="header-actions">
+      <button class="lang-btn" id="langBtn">العربية</button>
+      <button class="menu-btn" id="menuBtn">☰</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="page-hero">
+    <div class="container">
+      <span class="eyebrow" data-en="BOOK YOUR SESSION" data-ar="احجز جلستك">BOOK YOUR SESSION</span>
+      <h1 data-en="Your Next Step Starts Here" data-ar="خطوتك القادمة تبدأ هنا">Your Next Step Starts Here</h1>
+      <p data-en="Complete the form and send your booking request. We will contact you to confirm the details." data-ar="املأ النموذج وأرسل طلب الحجز، وسنتواصل معك لتأكيد التفاصيل.">Complete the form and send your booking request. We will contact you to confirm the details.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <form class="form-card" id="bookingForm">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="name" data-en="Full Name" data-ar="الاسم بالكامل">Full Name</label>
+            <input id="name" name="name" type="text" required placeholder="Your name">
+          </div>
+
+          <div class="form-group">
+            <label for="email" data-en="Email Address" data-ar="البريد الإلكتروني">Email Address</label>
+            <input id="email" name="email" type="email" required placeholder="name@example.com">
+          </div>
+
+          <div class="form-group">
+            <label for="phone" data-en="WhatsApp Number" data-ar="رقم الواتساب">WhatsApp Number</label>
+            <input id="phone" name="phone" type="tel" required placeholder="+20">
+          </div>
+
+          <div class="form-group">
+            <label for="session" data-en="Session Type" data-ar="نوع الجلسة">Session Type</label>
+            <select id="session" name="session" required>
+              <option value="" data-en="Choose a service" data-ar="اختر الخدمة">Choose a service</option>
+              <option value="Personal Development" data-en="Personal Development" data-ar="التطوير الشخصي">Personal Development</option>
+              <option value="Career & Goals" data-en="Career & Goals" data-ar="المسار المهني والأهداف">Career & Goals</option>
+              <option value="Life Balance" data-en="Life Balance" data-ar="التوازن في الحياة">Life Balance</option>
+              <option value="One-to-One Coaching" data-en="One-to-One Coaching" data-ar="كوتشينج فردي">One-to-One Coaching</option>
+              <option value="Other" data-en="Other" data-ar="أخرى">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group full">
+            <label for="date" data-en="Preferred Date" data-ar="التاريخ المفضل">Preferred Date</label>
+            <input id="date" name="date" type="date" required>
+          </div>
+
+          <div class="form-group full">
+            <label for="details" data-en="Tell Us About Your Goals" data-ar="حدثنا عن أهدافك">Tell Us About Your Goals</label>
+            <textarea id="details" name="details" placeholder="What would you like to work on?"></textarea>
+          </div>
+        </div>
+
+        <div class="payment-box">
+          <h3 data-en="Payment Method: InstaPay" data-ar="طريقة الدفع: إنستا باي">Payment Method: InstaPay</h3>
+          <p data-en="Payment details will be shared with you after reviewing your booking request. Your appointment is confirmed only after payment verification." data-ar="سيتم إرسال تفاصيل الدفع بعد مراجعة طلب الحجز. يتم تأكيد موعدك بعد مراجعة الدفع والتحقق منه.">Payment details will be shared with you after reviewing your booking request. Your appointment is confirmed only after payment verification.</p>
+        </div>
+
+        <p class="notice" data-en="Submitting this form opens WhatsApp to send your request. It does not automatically confirm your booking." data-ar="إرسال النموذج يفتح واتساب لإرسال طلبك، ولا يعني تأكيد الحجز تلقائيًا.">Submitting this form opens WhatsApp to send your request. It does not automatically confirm your booking.</p>
+
+        <button type="submit" class="btn btn-primary" style="width:100%;margin-top:22px" data-en="Send Booking Request →" data-ar="إرسال طلب الحجز ←">Send Booking Request →</button>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <a class="logo" href="index.html">MARCO <span>LIVE COACH</span></a>
+    <p>© 2026 Marco Live Coach. All rights reserved.</p>
+    <div class="footer-links"><a href="services.html" data-en="Services" data-ar="الخدمات">Services</a><a href="contact.html" data-en="Contact" data-ar="التواصل">Contact</a></div>
+  </div>
+</footer>
+<script src="js/app.js"></script>
+</body>
+</html>
