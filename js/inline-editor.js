@@ -1,6 +1,6 @@
 (() => {
 const start=async()=>{
- const client=window.marcoSupabase;if(!client)return;
+ const client=window.marcoSupabase;if(!client){setTimeout(start,400);return;}
  const {data:sessionData}=await client.auth.getSession();if(!sessionData.session)return;
  const {data:isEditor,error:roleError}=await client.rpc("is_marco_editor");if(roleError||isEditor!==true)return;
  const pageName=(location.pathname.split("/").pop()||"index.html").replace(".html","");
@@ -29,10 +29,10 @@ const start=async()=>{
  else headerActions.insertBefore(startBtn,headerActions.firstChild);
 
  const toolbar=document.createElement("div");toolbar.id="marco-editor-toolbar";
- toolbar.innerHTML='<button id="marco-section-add">＋ إضافة قسم</button><button id="marco-editor-save" class="save">حفظ ونشر</button><button id="marco-editor-cancel" class="cancel">إلغاء</button><span id="marco-editor-status">محرر الصفحة جاهز</span>';
+ toolbar.innerHTML='<button id="marco-section-add">＋ إضافة قسم</button><button id="marco-image-add">＋ إضافة صورة</button><button id="marco-editor-save" class="save">حفظ ونشر</button><button id="marco-editor-cancel" class="cancel">إلغاء</button><span id="marco-editor-status">محرر الصفحة جاهز</span>';
  document.body.appendChild(toolbar);
- const addBtn=toolbar.querySelector("#marco-section-add"),saveBtn=toolbar.querySelector("#marco-editor-save"),cancelBtn=toolbar.querySelector("#marco-editor-cancel"),status=toolbar.querySelector("#marco-editor-status");
- const originals=new Map();let active=false;let selectedImage=null;
+ const addBtn=toolbar.querySelector("#marco-section-add"),imageAddBtn=toolbar.querySelector("#marco-image-add"),saveBtn=toolbar.querySelector("#marco-editor-save"),cancelBtn=toolbar.querySelector("#marco-editor-cancel"),status=toolbar.querySelector("#marco-editor-status");
+ const originals=new Map();let active=false;let selectedImage=null;let selectedSection=null;
  const imageInput=document.createElement("input");imageInput.type="file";imageInput.accept="image/*";imageInput.hidden=true;document.body.appendChild(imageInput);
  function assignKeys(){
   const nodes=[...main.querySelectorAll("h1,h2,h3,h4,p,li,.eyebrow,.card-icon,.stat strong,.stat span")];
@@ -92,6 +92,7 @@ const start=async()=>{
  }
  startBtn.addEventListener("click",enterEdit);
  cancelBtn.addEventListener("click",()=>{if(confirm("إلغاء كل التعديلات غير المحفوظة؟")){leaveEdit(true);status.textContent="تم إلغاء التعديلات";}});
+ imageAddBtn.addEventListener("click",()=>{if(!active)return;selectedImage=null;status.textContent="اختار صورة من جهازك لإضافتها للقسم المحدد";imageInput.click();});
  addBtn.addEventListener("click",()=>{
   if(!active)return;
   const section=document.createElement("section");section.className="section";section.dataset.marcoSection="1";
@@ -107,13 +108,26 @@ const start=async()=>{
   if(active&&img&&!img.closest("a,button,form")){selectedImage=img;imageInput.click();}
  });
  imageInput.addEventListener("change",async()=>{
-  if(!selectedImage||!imageInput.files||!imageInput.files[0])return;
-  const file=imageInput.files[0];status.textContent="جاري رفع الصورة...";
+  if(!imageInput.files||!imageInput.files[0])return;
+  const file=imageInput.files[0];
+  if(!file.type.startsWith("image/")||file.size>8*1024*1024){status.textContent="اختار صورة صالحة بحجم لا يتجاوز 8 ميجابايت";imageInput.value="";return;}
+  status.textContent="جاري رفع الصورة...";
   const ext=(file.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"");
-  const path=pageKey+"/"+selectedImage.dataset.contentKey.replace(/[^a-zA-Z0-9._-]/g,"-")+"-"+Date.now()+"."+ext;
-  const {error:uploadError}=await client.storage.from("site-media").upload(path,file,{upsert:true,contentType:file.type||"image/jpeg",cacheControl:"3600"});
+  const imageKey=selectedImage?.dataset.contentKey||("inline."+pageKey+".image.new."+Date.now());
+  const path=pageKey+"/"+imageKey.replace(/[^a-zA-Z0-9._-]/g,"-")+"-"+Date.now()+"."+ext;
+  const {error:uploadError}=await client.storage.from("site-media").upload(path,file,{upsert:false,contentType:file.type||"image/jpeg",cacheControl:"3600"});
   if(uploadError){status.textContent="فشل رفع الصورة: "+uploadError.message;imageInput.value="";return;}
-  const {data}=client.storage.from("site-media").getPublicUrl(path);selectedImage.src=data.publicUrl;status.textContent="تم رفع الصورة — احفظ لنشرها";imageInput.value="";
+  const {data}=client.storage.from("site-media").getPublicUrl(path);
+  if(selectedImage){selectedImage.src=data.publicUrl;}
+  else{
+   const target=selectedSection&&main.contains(selectedSection)?selectedSection:main;
+   let holder=target.querySelector(":scope > .container");
+   if(!holder){holder=document.createElement("div");holder.className="container";target.appendChild(holder);}
+   const figure=document.createElement("figure");figure.style.cssText="margin:24px auto;text-align:center;max-width:100%";
+   const img=document.createElement("img");img.src=data.publicUrl;img.alt="";img.loading="lazy";img.style.cssText="display:block;width:auto;max-width:100%;max-height:620px;height:auto;object-fit:contain;margin:auto;border-radius:20px";
+   figure.appendChild(img);holder.appendChild(figure);selectedImage=img;refs=assignKeys();
+  }
+  status.textContent="تم رفع الصورة — احفظ لنشرها";imageInput.value="";
  });
  saveBtn.addEventListener("click",async()=>{
   if(!active)return;saveBtn.disabled=true;status.textContent="جاري حفظ الصفحة...";
