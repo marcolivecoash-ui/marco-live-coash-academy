@@ -1,10 +1,10 @@
 
-// Marco Live Coach - Main JavaScript
-
 document.addEventListener("DOMContentLoaded", () => {
-  // Language Switcher
   const langBtn = document.getElementById("langBtn");
-  let currentLang = "en";
+  const menuBtn = document.getElementById("menuBtn");
+  const nav = document.getElementById("nav");
+
+  let currentLang = localStorage.getItem("marco-language") || "en";
 
   function changeLanguage(lang) {
     currentLang = lang;
@@ -12,16 +12,22 @@ document.addEventListener("DOMContentLoaded", () => {
     document.documentElement.lang = lang;
     document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
 
+    if (document.body) {
+      document.body.dir = lang === "ar" ? "rtl" : "ltr";
+    }
+
     document.querySelectorAll("[data-en][data-ar]").forEach((element) => {
       element.textContent =
         lang === "ar"
-          ? element.getAttribute("data-ar")
-          : element.getAttribute("data-en");
+          ? element.dataset.ar
+          : element.dataset.en;
     });
 
     if (langBtn) {
       langBtn.textContent = lang === "ar" ? "English" : "العربية";
     }
+
+    localStorage.setItem("marco-language", lang);
   }
 
   if (langBtn) {
@@ -30,24 +36,44 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Mobile Navigation
-  const menuBtn = document.getElementById("menuBtn");
-  const nav = document.getElementById("nav");
-
   if (menuBtn && nav) {
     menuBtn.addEventListener("click", () => {
       nav.classList.toggle("active");
-      menuBtn.classList.toggle("active");
     });
 
     nav.querySelectorAll("a").forEach((link) => {
       link.addEventListener("click", () => {
         nav.classList.remove("active");
-        menuBtn.classList.remove("active");
       });
     });
   }
 
-  // Set initial language
-  changeLanguage("en");
+  const bookingForm = document.getElementById("bookingForm");
+
+  if (bookingForm) {
+    bookingForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const formData = new FormData(bookingForm);
+
+      const name = formData.get("name");
+      const email = formData.get("email");
+      const phone = formData.get("phone");
+      const session = formData.get("session");
+      const date = formData.get("date");
+      const details = formData.get("details");
+
+      const message = currentLang === "ar"
+        ? `طلب حجز جلسة جديدة\n\nالاسم: ${name}\nالبريد: ${email}\nالهاتف: ${phone}\nنوع الجلسة: ${session}\nالتاريخ المفضل: ${date}\nالتفاصيل: ${details}`
+        : `New Booking Request\n\nName: ${name}\nEmail: ${email}\nPhone: ${phone}\nSession: ${session}\nPreferred Date: ${date}\nDetails: ${details}`;
+
+      const whatsappNumber = "201000000000";
+      const whatsappURL =
+        `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+
+      window.open(whatsappURL, "_blank");
+    });
+  }
+
+  changeLanguage(currentLang);
 });
