@@ -1,79 +1,63 @@
-
 document.addEventListener("DOMContentLoaded", () => {
+  // Load Supabase and the shared auth guard on every protected page.
+  const supabaseScript = document.createElement("script");
+  supabaseScript.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
+  supabaseScript.onload = () => {
+    const configScript = document.createElement("script");
+    configScript.src = "js/supabase-config.js";
+    configScript.onload = () => {
+      const authScript = document.createElement("script");
+      authScript.src = "js/auth.js";
+      document.body.appendChild(authScript);
+    };
+    document.body.appendChild(configScript);
+  };
+  supabaseScript.onerror = () => {
+    document.documentElement.style.visibility = "visible";
+    console.error("Could not load Supabase JS");
+  };
+  document.head.appendChild(supabaseScript);
+
   const langBtn = document.getElementById("langBtn");
   const menuBtn = document.getElementById("menuBtn");
   const nav = document.getElementById("nav");
-
   let currentLang = localStorage.getItem("marco-language") || "en";
 
   function changeLanguage(lang) {
     currentLang = lang;
-
     document.documentElement.lang = lang;
     document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
-
-    if (document.body) {
-      document.body.dir = lang === "ar" ? "rtl" : "ltr";
-    }
-
+    if (document.body) document.body.dir = lang === "ar" ? "rtl" : "ltr";
     document.querySelectorAll("[data-en][data-ar]").forEach((element) => {
-      element.textContent =
-        lang === "ar"
-          ? element.dataset.ar
-          : element.dataset.en;
+      element.textContent = lang === "ar" ? element.dataset.ar : element.dataset.en;
     });
-
-    if (langBtn) {
-      langBtn.textContent = lang === "ar" ? "English" : "العربية";
-    }
-
+    if (langBtn) langBtn.textContent = lang === "ar" ? "English" : "العربية";
     localStorage.setItem("marco-language", lang);
   }
 
-  if (langBtn) {
-    langBtn.addEventListener("click", () => {
-      changeLanguage(currentLang === "en" ? "ar" : "en");
-    });
-  }
-
+  if (langBtn) langBtn.addEventListener("click", () => changeLanguage(currentLang === "en" ? "ar" : "en"));
   if (menuBtn && nav) {
-    menuBtn.addEventListener("click", () => {
-      nav.classList.toggle("active");
-    });
-
-    nav.querySelectorAll("a").forEach((link) => {
-      link.addEventListener("click", () => {
-        nav.classList.remove("active");
-      });
-    });
+    menuBtn.addEventListener("click", () => nav.classList.toggle("active"));
+    nav.querySelectorAll("a").forEach((link) => link.addEventListener("click", () => nav.classList.remove("active")));
   }
 
   const bookingForm = document.getElementById("bookingForm");
-
   if (bookingForm) {
     bookingForm.addEventListener("submit", (event) => {
       event.preventDefault();
-
       const formData = new FormData(bookingForm);
-
       const name = formData.get("name");
       const email = formData.get("email");
       const phone = formData.get("phone");
       const session = formData.get("session");
       const date = formData.get("date");
       const details = formData.get("details");
-
       const message = currentLang === "ar"
         ? `طلب حجز جلسة جديدة\n\nالاسم: ${name}\nالبريد: ${email}\nالهاتف: ${phone}\nنوع الجلسة: ${session}\nالتاريخ المفضل: ${date}\nالتفاصيل: ${details}`
         : `New Booking Request\n\nName: ${name}\nEmail: ${email}\nPhone: ${phone}\nSession: ${session}\nPreferred Date: ${date}\nDetails: ${details}`;
-
       const whatsappNumber = "201000000000";
-      const whatsappURL =
-        `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
-
-      window.open(whatsappURL, "_blank");
+      window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, "_blank");
     });
   }
-
   changeLanguage(currentLang);
 });
