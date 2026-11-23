@@ -117,6 +117,12 @@
           adminLink.dataset.ar = "لوحة الأدمن";
           adminLink.textContent = document.documentElement.lang === "ar" ? adminLink.dataset.ar : adminLink.dataset.en;
           homeNav.appendChild(adminLink);
+          const coursesAdminLink = document.createElement("a");
+          coursesAdminLink.href = "admin-courses.html";
+          coursesAdminLink.dataset.en = "Manage Courses";
+          coursesAdminLink.dataset.ar = "إدارة الكورسات";
+          coursesAdminLink.textContent = document.documentElement.lang === "ar" ? coursesAdminLink.dataset.ar : coursesAdminLink.dataset.en;
+          homeNav.appendChild(coursesAdminLink);
 
           // Content editing is performed directly on the current page by inline-editor.js.
           // Do not show the legacy editor-dashboard link here.
@@ -153,7 +159,7 @@
 
       const dropdown = document.createElement("div");
       dropdown.className = "profile-dropdown";
-      dropdown.innerHTML = '<div class="profile-email"></div><a href="account.html" data-en="Manage account" data-ar="إدارة الحساب">Manage account</a><button type="button" id="menuSignOut" data-en="Sign out" data-ar="تسجيل الخروج">Sign out</button>';
+      dropdown.innerHTML = '<div class="profile-email"></div><a href="my-courses.html" data-en="My Courses" data-ar="كورساتي">My Courses</a><a href="account.html" data-en="Manage account" data-ar="إدارة الحساب">Manage account</a><button type="button" id="menuSignOut" data-en="Sign out" data-ar="تسجيل الخروج">Sign out</button>';
       dropdown.querySelector(".profile-email").textContent = user.email || displayName;
       const pageLang = document.documentElement.lang === "ar" ? "ar" : "en";
       dropdown.querySelectorAll("[data-en][data-ar]").forEach((item) => {
