@@ -96,11 +96,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const phone = formData.get("phone");
       const session = formData.get("session");
       const date = formData.get("date");
+      const slotLabel = formData.get("slot_label");
       const details = formData.get("details");
       const message = currentLang === "ar"
-        ? `طلب حجز جلسة جديدة\n\nالاسم: ${name}\nالبريد: ${email}\nالهاتف: ${phone}\nنوع الجلسة: ${session}\nالتاريخ المفضل: ${date}\nالتفاصيل: ${details}`
-        : `New Booking Request\n\nName: ${name}\nEmail: ${email}\nPhone: ${phone}\nSession: ${session}\nPreferred Date: ${date}\nDetails: ${details}`;
-      if (!formData.get("slot_id")) { alert(currentLang === "ar" ? "من فضلك اختار موعدًا متاحًا أولًا." : "Please select an available appointment first."); return; }\n      const whatsappNumber = "201000000000";
+        ? `طلب حجز جلسة جديدة\n\nالموعد المختار: ${slotLabel || "لم يتم اختيار موعد"}\nالاسم: ${name}\nالبريد: ${email}\nالهاتف: ${phone}\nنوع الجلسة: ${session}\nالتاريخ المفضل: ${date}\nالتفاصيل: ${details}`
+        : `New Booking Request\n\nSelected appointment: ${slotLabel || "No appointment selected"}\nName: ${name}\nEmail: ${email}\nPhone: ${phone}\nSession: ${session}\nPreferred Date: ${date}\nDetails: ${details}`;
+      if (!formData.get("slot_id")) { alert(currentLang === "ar" ? "من فضلك اختار موعدًا متاحًا أولًا." : "Please select an available appointment first."); return; }
+      const whatsappNumber = "201000000000";
       window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, "_blank");
     });
   }
