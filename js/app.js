@@ -40,6 +40,33 @@ document.addEventListener("DOMContentLoaded", () => {
   const langBtn = document.getElementById("langBtn");
   const menuBtn = document.getElementById("menuBtn");
   const nav = document.getElementById("nav");
+  // Persistent light/dark appearance control.
+  const themeButton = document.createElement("button");
+  themeButton.type = "button";
+  themeButton.className = "theme-toggle";
+  themeButton.id = "themeToggle";
+  themeButton.setAttribute("aria-label", "Switch color theme");
+  themeButton.title = "Switch color theme";
+  const savedTheme = localStorage.getItem("marco-theme") || "dark";
+  document.documentElement.dataset.theme = savedTheme;
+  function syncThemeButton() {
+    const light = document.documentElement.dataset.theme === "light";
+    themeButton.textContent = light ? "☾" : "☀";
+    themeButton.title = light ? "Switch to dark mode" : "Switch to light mode";
+    themeButton.setAttribute("aria-label", themeButton.title);
+  }
+  const headerActions = document.querySelector(".site-header .header-actions");
+  if (headerActions) {
+    headerActions.insertBefore(themeButton, headerActions.firstChild);
+    syncThemeButton();
+    themeButton.addEventListener("click", () => {
+      const nextTheme = document.documentElement.dataset.theme === "light" ? "dark" : "light";
+      document.documentElement.dataset.theme = nextTheme;
+      localStorage.setItem("marco-theme", nextTheme);
+      syncThemeButton();
+    });
+  }
+
   let currentLang = localStorage.getItem("marco-language") || "en";
 
   function changeLanguage(lang) {
