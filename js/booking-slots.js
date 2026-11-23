@@ -1,9 +1,10 @@
 (() => {
   const root = document.getElementById("availableSlots");
   if (!root || !window.supabase || !window.MARCO_SUPABASE_URL || !window.MARCO_SUPABASE_PUBLISHABLE_KEY) return;
-  const client = window.supabase.createClient(window.MARCO_SUPABASE_URL, window.MARCO_SUPABASE_PUBLISHABLE_KEY, {
+  const client = window.marcoSupabase || window.supabase.createClient(window.MARCO_SUPABASE_URL, window.MARCO_SUPABASE_PUBLISHABLE_KEY, {
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
   });
+  window.marcoSupabase = client;
   const escapeHtml = (value) => String(value).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const dateFmt = new Intl.DateTimeFormat("en-GB", { weekday:"short", day:"numeric", month:"short", year:"numeric" });
   const timeFmt = new Intl.DateTimeFormat("en-GB", { hour:"2-digit", minute:"2-digit", hour12:true });
