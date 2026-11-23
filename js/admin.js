@@ -38,15 +38,15 @@
   }
 
   function whatsappUrl(phone, booking, slot) {
-    let digits = String(phone || "").replace(/\\D/g, "");
+    let digits = String(phone || "").replace(/\D/g, "");
     if (digits.startsWith("00")) digits = digits.slice(2);
     if (digits.startsWith("0")) digits = "20" + digits.slice(1);
-    else if (/^1[0125]\\d{8}$/.test(digits)) digits = "20" + digits;
-    if (!/^\\d{10,15}$/.test(digits) || digits.startsWith("0")) return "";
+    else if (/^1[0125]\d{8}$/.test(digits)) digits = "20" + digits;
+    if (!/^\d{10,15}$/.test(digits) || digits.startsWith("0")) return "";
     const when = slot?.starts_at ? formatDate(slot.starts_at) : "الموعد المتفق عليه";
-    const message = "أهلاً " + booking.customer_name + " 🌟\\n" +
-      "تم تأكيد حجز جلستك مع Marco Live Coach بنجاح.\\n" +
-      "موعد الجلسة: " + when + "\\n" +
+    const message = "أهلاً " + booking.customer_name + " 🌟\n" +
+      "تم تأكيد حجز جلستك مع Marco Live Coach بنجاح.\n" +
+      "موعد الجلسة: " + when + "\n" +
       "نتشرف بيك ونتمنى لك تجربة موفقة!";
     return "https://wa.me/" + digits + "?text=" + encodeURIComponent(message);
   }
