@@ -1,17 +1,16 @@
 (() => {
-  const LOGIN_PATH = "login.html";
-  const BASE_PATH = "/marco-live-coash-academy/";
-  const isLogin = location.pathname.endsWith("/" + LOGIN_PATH);
-  const loginUrl = new URL(LOGIN_PATH, location.href).href;
-  const homeUrl = new URL("index.html", location.href).href;
+  const SITE_BASE = window.location.origin + "/marco-live-coash-academy/";
+  const LOGIN_URL = SITE_BASE + "login.html";
+  const HOME_URL = SITE_BASE + "index.html";
+  const isLogin = window.location.pathname.endsWith("/login.html");
 
   if (!isLogin) document.documentElement.style.visibility = "hidden";
 
   async function start() {
+    const status = document.getElementById("authStatus");
     if (!window.supabase || !window.MARCO_SUPABASE_URL || !window.MARCO_SUPABASE_PUBLISHABLE_KEY) {
       document.documentElement.style.visibility = "visible";
-      const status = document.getElementById("authStatus");
-      if (status) status.textContent = "تعذر تحميل خدمة تسجيل الدخول. حدّث الصفحة وحاول مرة أخرى.";
+      if (status) status.textContent = "تعذر تحميل خدمة تسجيل الدخول. تأكد من الاتصال بالإنترنت ثم حدّث الصفحة.";
       return;
     }
 
@@ -22,47 +21,92 @@
     );
     window.marcoSupabase = client;
 
-    const { data: { session }, error } = await client.auth.getSession();
-    if (error) console.error("Session check:", error);
+    const { data, error } = await client.auth.getSession();
+    if (error) console.error("Supabase session error:", error);
+    const session = data && data.session;
 
     if (isLogin) {
       if (session) {
-        location.replace(homeUrl);
+        window.location.replace(HOME_URL);
         return;
       }
       document.documentElement.style.visibility = "visible";
-      const button = document.getElementById("googleLogin");
-      const status = document.getElementById("authStatus");
-      if (button) button.addEventListener("click", async () => {
-        button.disabled = true;
-        if (status) status.textContent = "جاري تحويلك إلى Google...";
-        const redirectTo = new URL("index.html", location.href).href;
-        const result = await client.auth.signInWithOAuth({
+
+      const googleButton = document.getElementById("googleLogin");
+      if (googleButton) googleButton.addEventListener("click", async () => {
+        googleButton.disabled = true;
+        if (status) status.textContent = "جاري فتح Google...";
+        const { error: oauthError } = await client.auth.signInWithOAuth({
           provider: "google",
-          options: { redirectTo }
+          options: { redirectTo: HOME_URL }
         });
-        if (result.error) {
-          button.disabled = false;
-          if (status) status.textContent = "حدث خطأ: " + result.error.message;
+        if (oauthError) {
+          googleButton.disabled = false;
+          if (status) status.textContent = "تعذر تسجيل الدخول بجوجل: " + oauthError.message;
         }
+      });
+
+      const form = document.getElementById("emailAuthForm");
+      const submit = document.getElementById("emailSubmit");
+      const loginTab = document.getElementById("showLogin");
+      const signupTab = document.getElementById("showSignup");
+      const password = document.getElementById("authPassword");
+      let mode = "login";
+
+      function setMode(nextMode) {
+        mode = nextMode;
+        loginTab.classList.toggle("active", mode === "login");
+        signupTab.classList.toggle("active", mode === "signup");
+        submit.textContent = mode === "login" ? "تسجيل الدخول" : "إنشاء حساب";
+        password.autocomplete = mode === "login" ? "current-password" : "new-password";
+        if (status) status.textContent = mode === "login" ? "أدخل بريدك الإلكتروني وكلمة المرور." : "أنشئ حسابك باستخدام بريد إلكتروني وكلمة مرور.";
+      }
+      loginTab.addEventListener("click", () => setMode("login"));
+      signupTab.addEventListener("click", () => setMode("signup"));
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        submit.disabled = true;
+        const email = document.getElementById("authEmail").value.trim();
+        const passwordValue = password.value;
+        if (status) status.textContent = mode === "login" ? "جاري تسجيل الدخول..." : "جاري إنشاء الحساب...";
+        let result;
+        if (mode === "login") {
+          result = await client.auth.signInWithPassword({ email, password: passwordValue });
+        } else {
+          result = await client.auth.signUp({
+            email,
+            password: passwordValue,
+            options: { emailRedirectTo: HOME_URL }
+          });
+        }
+        submit.disabled = false;
+        if (result.error) {
+          if (status) status.textContent = "تعذر إكمال العملية: " + result.error.message;
+          return;
+        }
+        if (mode === "signup" && !result.data.session) {
+          if (status) status.textContent = "تم إنشاء الحساب. افتح بريدك الإلكتروني واضغط رابط تأكيد الحساب، ثم ارجع وسجّل الدخول.";
+          return;
+        }
+        if (status) status.textContent = "تم بنجاح. جاري فتح الموقع...";
+        window.location.replace(HOME_URL);
       });
       return;
     }
 
     if (!session) {
-      const next = encodeURIComponent(location.href);
-      location.replace(loginUrl + "?next=" + next);
+      window.location.replace(LOGIN_URL + "?next=" + encodeURIComponent(window.location.href));
       return;
     }
 
     document.documentElement.style.visibility = "visible";
     const headerActions = document.querySelector(".header-actions");
     if (headerActions && !document.getElementById("signOutBtn")) {
-      const user = session.user;
       const email = document.createElement("span");
       email.className = "auth-user";
-      email.textContent = user.email || "Signed in";
-      email.title = user.email || "";
+      email.textContent = session.user.email || "Signed in";
+      email.title = session.user.email || "";
       headerActions.appendChild(email);
 
       const signOut = document.createElement("button");
@@ -72,19 +116,19 @@
       signOut.textContent = "تسجيل الخروج";
       signOut.addEventListener("click", async () => {
         signOut.disabled = true;
-        const result = await client.auth.signOut();
-        if (result.error) {
+        const { error: signOutError } = await client.auth.signOut();
+        if (signOutError) {
           signOut.disabled = false;
-          alert("تعذر تسجيل الخروج: " + result.error.message);
+          alert("تعذر تسجيل الخروج: " + signOutError.message);
         } else {
-          location.replace(loginUrl);
+          window.location.replace(LOGIN_URL);
         }
       });
       headerActions.appendChild(signOut);
     }
 
     client.auth.onAuthStateChange((event, updatedSession) => {
-      if (event === "SIGNED_OUT" || !updatedSession) location.replace(loginUrl);
+      if (event === "SIGNED_OUT" || !updatedSession) window.location.replace(LOGIN_URL);
     });
   }
 
