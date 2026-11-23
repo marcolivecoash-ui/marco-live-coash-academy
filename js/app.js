@@ -1,3 +1,4 @@
+document.documentElement.style.visibility = "hidden";
 document.addEventListener("DOMContentLoaded", () => {
   // Load Supabase and the shared auth guard on every protected page.
   const supabaseScript = document.createElement("script");
