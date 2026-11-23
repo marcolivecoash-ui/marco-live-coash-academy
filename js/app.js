@@ -98,19 +98,42 @@ document.addEventListener("DOMContentLoaded", () => {
       const formData = new FormData(bookingForm);
       const messageBox = document.getElementById("bookingMessage");
       const slotId = formData.get("slot_id");
+      const receiptFile = formData.get("payment_receipt");
+      const ar = currentLang === "ar";
       if (!slotId) {
-        messageBox.textContent = currentLang === "ar" ? "من فضلك اختار موعدًا متاحًا أولًا." : "Please select an available appointment first.";
+        messageBox.textContent = ar ? "من فضلك اختار موعدًا متاحًا أولًا." : "Please select an available appointment first.";
+        return;
+      }
+      if (!(receiptFile instanceof File) || !receiptFile.size) {
+        messageBox.textContent = ar ? "من فضلك ارفع صورة إيصال التحويل." : "Please upload your transfer receipt.";
+        return;
+      }
+      if (!["image/jpeg", "image/png", "image/webp"].includes(receiptFile.type)) {
+        messageBox.textContent = ar ? "نوع الصورة غير مدعوم. استخدم JPG أو PNG أو WEBP." : "Unsupported image type. Use JPG, PNG or WEBP.";
+        return;
+      }
+      if (receiptFile.size > 8 * 1024 * 1024) {
+        messageBox.textContent = ar ? "حجم الصورة يجب ألا يتجاوز 8 ميجابايت." : "The image must be 8 MB or smaller.";
         return;
       }
       const client = window.marcoSupabase;
       if (!client) {
-        messageBox.textContent = currentLang === "ar" ? "تعذر الاتصال بالخدمة. حدّث الصفحة وحاول مرة أخرى." : "The service is not ready. Refresh the page and try again.";
+        messageBox.textContent = ar ? "تعذر الاتصال بالخدمة. حدّث الصفحة وحاول مرة أخرى." : "The service is not ready. Refresh the page and try again.";
         return;
       }
+      const { data: userData, error: userError } = await client.auth.getUser();
+      if (userError || !userData.user) {
+        messageBox.textContent = ar ? "انتهت جلسة تسجيل الدخول. سجّل الدخول مرة أخرى." : "Your login session expired. Please sign in again.";
+        return;
+      }
+
       const submitButton = bookingForm.querySelector('button[type="submit"]');
       submitButton.disabled = true;
-      messageBox.textContent = currentLang === "ar" ? "جاري إرسال طلب الحجز..." : "Sending your booking request...";
-      const { data, error } = await client.rpc("book_marco_slot", {
+      messageBox.textContent = ar ? "جاري إنشاء طلب الحجز..." : "Creating your booking request...";
+      let bookingId = null;
+      let receiptPath = null;
+      let requestError = null;
+      const { data: createdId, error: createError } = await client.rpc("book_marco_slot", {
         p_slot_id: slotId,
         p_customer_name: formData.get("name"),
         p_customer_email: formData.get("email"),
@@ -118,21 +141,52 @@ document.addEventListener("DOMContentLoaded", () => {
         p_session_type: formData.get("session"),
         p_details: formData.get("details") || ""
       });
+      if (createError || !createdId) {
+        requestError = createError || new Error("Booking request was not created.");
+      } else {
+        bookingId = createdId;
+        const extension = receiptFile.type === "image/png" ? "png" : receiptFile.type === "image/webp" ? "webp" : "jpg";
+        receiptPath = userData.user.id + "/" + bookingId + "." + extension;
+        messageBox.textContent = ar ? "تم إنشاء الطلب. جاري رفع إيصال التحويل..." : "Request created. Uploading your transfer receipt...";
+        const { error: uploadError } = await client.storage.from("payment-receipts").upload(receiptPath, receiptFile, {
+          cacheControl: "3600",
+          upsert: false,
+          contentType: receiptFile.type
+        });
+        if (uploadError) {
+          requestError = uploadError;
+        } else {
+          messageBox.textContent = ar ? "تم رفع الإيصال. جاري إرساله للمراجعة..." : "Receipt uploaded. Submitting it for review...";
+          const { error: receiptError } = await client.rpc("submit_booking_receipt", {
+            p_booking_id: bookingId,
+            p_receipt_path: receiptPath
+          });
+          if (receiptError) {
+            requestError = receiptError;
+            await client.storage.from("payment-receipts").remove([receiptPath]);
+          }
+        }
+        if (requestError) {
+          await client.rpc("cancel_booking_upload", { p_booking_id: bookingId });
+        }
+      }
+
       submitButton.disabled = false;
-      if (error) {
-        messageBox.textContent = currentLang === "ar"
-          ? (error.message.includes("no longer available") ? "عذرًا، هذا الموعد لم يعد متاحًا. اختر موعدًا آخر." : "تعذر إرسال الطلب: " + error.message)
-          : "Could not send request: " + error.message;
+      if (requestError) {
+        messageBox.textContent = ar
+          ? "تعذر إكمال طلب الحجز: " + requestError.message + " — لو تم إنشاء الطلب، حاول اختيار موعد آخر إذا لم يعد الموعد متاحًا."
+          : "Could not complete your booking: " + requestError.message + ". If the slot is no longer available, please select another one.";
         return;
       }
+
       bookingForm.reset();
       document.getElementById("selectedSlotId").value = "";
       document.getElementById("selectedSlotLabel").value = "";
       document.getElementById("date").value = "";
-      document.getElementById("availableSlots").innerHTML = '<div class="slot-empty">تم إرسال الطلب. جاري تحديث المواعيد...</div>';
-      messageBox.textContent = currentLang === "ar"
-        ? "تم إرسال طلب الحجز بنجاح! سيظهر لدى الأدمن لمراجعته. لم يتم تأكيد الحجز أو الدفع بعد."
-        : "Your booking request was sent successfully. The admin will review it. Your booking and payment are not confirmed yet.";
+      document.getElementById("availableSlots").innerHTML = '<div class="slot-empty">' + (ar ? "تم إرسال الإيصال للمراجعة. جاري تحديث المواعيد..." : "Receipt submitted for review. Refreshing appointments...") + '</div>';
+      messageBox.textContent = ar
+        ? "تم إرسال طلب الحجز وإيصال التحويل بنجاح. الطلب الآن قيد مراجعة الأدمن، ولم يتم تأكيد الحجز بعد."
+        : "Your booking request and transfer receipt were submitted. The admin is reviewing the payment; your appointment is not confirmed yet.";
       const slotsScript = document.querySelector('script[src="js/booking-slots.js"]');
       if (slotsScript) {
         const refresh = document.createElement("script");
