@@ -84,6 +84,12 @@
           <input id="date" name="date" type="hidden"><input id="selectedSlotId" name="slot_id" type="hidden"><input id="selectedSlotLabel" name="slot_label" type="hidden">
 
           <div class="form-group full">
+            <label for="paymentReceipt" data-en="InstaPay Transfer Receipt" data-ar="صورة إيصال تحويل إنستا باي">InstaPay Transfer Receipt</label>
+            <input id="paymentReceipt" name="payment_receipt" type="file" accept="image/jpeg,image/png,image/webp" required>
+            <small data-en="Upload a clear screenshot or photo of your transfer receipt (JPG, PNG or WEBP)." data-ar="ارفع صورة واضحة أو لقطة شاشة لإيصال التحويل (JPG أو PNG أو WEBP).">Upload a clear screenshot or photo of your transfer receipt (JPG, PNG or WEBP).</small>
+          </div>
+
+          <div class="form-group full">
             <label for="details" data-en="Tell Us About Your Goals" data-ar="حدثنا عن أهدافك">Tell Us About Your Goals</label>
             <textarea id="details" name="details" placeholder="What would you like to work on?"></textarea>
           </div>
@@ -91,7 +97,7 @@
 
         <div class="payment-box">
           <h3 data-en="Payment Method: InstaPay" data-ar="طريقة الدفع: إنستا باي">Payment Method: InstaPay</h3>
-          <p data-en="Payment details will be shared with you after reviewing your booking request. Your appointment is confirmed only after payment verification." data-ar="سيتم إرسال تفاصيل الدفع بعد مراجعة طلب الحجز. يتم تأكيد موعدك بعد مراجعة الدفع والتحقق منه.">Payment details will be shared with you after reviewing your booking request. Your appointment is confirmed only after payment verification.</p>
+          <p data-en="Transfer the session amount using the official InstaPay details provided by Marco, then upload your receipt below. Your appointment is confirmed only after the admin verifies the payment." data-ar="حوّل قيمة الجلسة باستخدام بيانات إنستا باي الرسمية التي يوفرها ماركو، ثم ارفع صورة الإيصال بالأسفل. لن يتأكد الموعد إلا بعد مراجعة الأدمن للتحويل.">Transfer the session amount using the official InstaPay details provided by Marco, then upload your receipt below. Your appointment is confirmed only after the admin verifies the payment.</p>
         </div>
 
         <p class="notice" id="bookingMessage" role="status" data-en="Your request will be sent securely through this website. Your appointment is not confirmed until payment is reviewed." data-ar="سيتم إرسال طلبك بأمان من خلال الموقع. لن يتأكد الموعد إلا بعد مراجعة الدفع.">Your request will be sent securely through this website. Your appointment is not confirmed until payment is reviewed.</p>
