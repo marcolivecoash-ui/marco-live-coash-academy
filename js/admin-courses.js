@@ -67,6 +67,46 @@
     for (const course of data) await loadLessons(course.id);
   }
 
+  let purchaseFilter = "pending";
+  let cachedPurchases = [];
+
+  function renderPurchases() {
+    const root = $("purchaseList");
+    const groups = {
+      pending: cachedPurchases.filter(p => ["awaiting_payment", "payment_review"].includes(p.status)),
+      confirmed: cachedPurchases.filter(p => p.status === "confirmed"),
+      rejected: cachedPurchases.filter(p => p.status === "rejected")
+    };
+    $("pendingCount").textContent = groups.pending.length;
+    $("confirmedCount").textContent = groups.confirmed.length;
+    $("rejectedCount").textContent = groups.rejected.length;
+    document.querySelectorAll("[data-purchase-filter]").forEach(tab =>
+      tab.classList.toggle("active", tab.dataset.purchaseFilter === purchaseFilter)
+    );
+    const selected = groups[purchaseFilter] || [];
+    if (!selected.length) {
+      root.innerHTML = '<div class="manage-empty">' +
+        (purchaseFilter === "pending" ? "لا توجد طلبات معلقة." :
+         purchaseFilter === "confirmed" ? "لا توجد طلبات مقبولة." : "لا توجد طلبات مرفوضة.") +
+        '</div>';
+      return;
+    }
+    root.innerHTML = selected.map(purchase => {
+      const receipt = purchase.receiptHtml || '<small>لا يوجد إيصال مرفوع.</small>';
+      const canReview = purchaseFilter === "pending";
+      const statusLabel = purchase.status === "confirmed" ? "مقبول" :
+        purchase.status === "rejected" ? "مرفوض" : "معلق";
+      return '<article class="manage-item"><strong>' + esc(purchase.courses?.title_ar || "كورس") + '</strong>' +
+        '<small>رقم العميل: ' + esc(purchase.user_id) + " · " +
+        Number(purchase.courses?.price_egp || 0).toLocaleString("en-US") + ' EGP</small>' +
+        '<small>الحالة: ' + statusLabel + " · فحص الإيصال: " +
+        esc(purchase.receipt_check_status || "لم يتم الفحص") + '</small>' + receipt +
+        (canReview ? '<div class="manage-actions"><button data-review="confirmed" data-id="' +
+          purchase.id + '">تأكيد الدفع وفتح الكورس</button><button class="danger" data-review="rejected" data-id="' +
+          purchase.id + '">رفض الطلب</button></div>' : "") + '</article>';
+    }).join("");
+  }
+
   async function loadPurchases() {
     const root = $("purchaseList");
     root.innerHTML = '<div class="manage-empty">جاري تحميل الطلبات...</div>';
@@ -74,36 +114,24 @@
       .select("id,user_id,status,payment_receipt_path,created_at,receipt_check_status,courses(title_ar,price_egp)")
       .order("created_at", { ascending: false });
     if (error) { root.textContent = error.message; return; }
-    if (!data || !data.length) {
-      root.innerHTML = '<div class="manage-empty">لا توجد طلبات شراء.</div>';
-      return;
-    }
-    const cards = await Promise.all(data.map(async (purchase) => {
-      let receipt = "<small>لا يوجد إيصال</small>";
+    cachedPurchases = await Promise.all((data || []).map(async purchase => {
+      let receiptHtml = '<small>لا يوجد إيصال مرفوع.</small>';
       if (purchase.payment_receipt_path) {
         const { data: signed, error: signedError } = await client.storage.from("payment-receipts")
           .createSignedUrl(purchase.payment_receipt_path, 3600);
-        if (signed && signed.signedUrl) {
+        if (signed?.signedUrl) {
           const safeUrl = esc(signed.signedUrl);
-          receipt = '<a href="' + safeUrl + '" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin:10px 0">' +
+          receiptHtml = '<a href="' + safeUrl + '" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin:10px 0">' +
             '<img src="' + safeUrl + '" alt="إيصال الدفع" loading="lazy" style="display:block;max-width:100%;width:320px;max-height:420px;object-fit:contain;border:1px solid var(--border);border-radius:12px;background:#111;padding:5px">' +
             '<span>فتح الإيصال بالحجم الكامل</span></a>';
         } else {
-          receipt = '<small style="color:#ff9292">تعذر تحميل الإيصال: ' +
+          receiptHtml = '<small style="color:#ff9292">تعذر تحميل الإيصال: ' +
             esc(signedError?.message || "تحقق من صلاحيات Storage ومسار الملف") + '</small>';
         }
       }
-      const canReview = ["awaiting_payment", "payment_review"].includes(purchase.status);
-      return '<article class="manage-item"><strong>' + esc(purchase.courses?.title_ar || "كورس") + '</strong>' +
-        '<small>رقم العميل: ' + esc(purchase.user_id) + " · " +
-        Number(purchase.courses?.price_egp || 0).toLocaleString("en-US") + ' EGP</small>' +
-        '<small>الحالة: ' + esc(purchase.status) + " · فحص الإيصال: " +
-        esc(purchase.receipt_check_status) + '</small>' + receipt +
-        (canReview ? '<div class="manage-actions"><button data-review="confirmed" data-id="' +
-          purchase.id + '">تأكيد الدفع وفتح الكورس</button><button class="danger" data-review="rejected" data-id="' +
-          purchase.id + '">رفض الطلب</button></div>' : "") + '</article>';
+      return { ...purchase, receiptHtml };
     }));
-    root.innerHTML = cards.join("");
+    renderPurchases();
   }
 
   $("courseForm").addEventListener("submit", async (event) => {
@@ -199,6 +227,13 @@
       ? "تم رفع الفيديو لكن تعذر ربطه بالدرس: " + updateError.message
       : "تم رفع الفيديو وربطه بالدرس.";
     await loadCourses();
+  });
+
+  document.querySelectorAll("[data-purchase-filter]").forEach(tab => {
+    tab.addEventListener("click", () => {
+      purchaseFilter = tab.dataset.purchaseFilter;
+      renderPurchases();
+    });
   });
 
   $("purchaseList").addEventListener("click", async (event) => {
