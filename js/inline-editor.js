@@ -76,7 +76,7 @@ const start=async()=>{
   return clone.innerHTML;
  }
  function enterEdit(){
-  active=true;originals.clear();refs=assignKeys();
+  active=true;originals.clear();selectedSection=null;refs=assignKeys();
   refs.leaves.forEach(el=>{originals.set(el,{html:el.innerHTML});el.contentEditable="true";el.spellcheck=true;});
   refs.imgs.forEach(img=>originals.set(img,{src:img.src}));
   document.body.classList.add("marco-edit-mode");addSectionTools();
@@ -104,8 +104,11 @@ const start=async()=>{
   addSectionTools();status.textContent="أضفت قسمًا جديدًا — عدّل نصوصه";
  });
  main.addEventListener("click",e=>{
+  if(!active||e.target.closest(".marco-section-tools"))return;
   const img=e.target.closest("img[data-marco-image]");
-  if(active&&img&&!img.closest("a,button,form")){selectedImage=img;imageInput.click();}
+  if(img&&!img.closest("a,button,form")){selectedImage=img;selectedSection=img.closest("section");status.textContent="اخترت صورة موجودة — اختر صورة بديلة من جهازك";imageInput.click();return;}
+  const section=e.target.closest("section");
+  if(section&&main.contains(section)){selectedSection=section;status.textContent="تم تحديد القسم لإضافة الصورة بداخله";}
  });
  imageInput.addEventListener("change",async()=>{
   if(!imageInput.files||!imageInput.files[0])return;
