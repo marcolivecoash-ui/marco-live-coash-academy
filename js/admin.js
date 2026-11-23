@@ -152,9 +152,37 @@
           ${booking.details ? `<small>التفاصيل: ${escapeHtml(booking.details)}</small>` : ""}
           <span class="slot-status">${labels[booking.status] || escapeHtml(booking.status)}</span>
         </div>
+        <div class="slot-actions">
+          <select aria-label="حالة طلب الحجز" data-booking-status data-id="${escapeHtml(booking.id)}">
+            <option value="awaiting_payment" ${booking.status === "awaiting_payment" ? "selected" : ""}>في انتظار الدفع</option>
+            <option value="payment_review" ${booking.status === "payment_review" ? "selected" : ""}>الدفع قيد المراجعة</option>
+            <option value="confirmed" ${booking.status === "confirmed" ? "selected" : ""}>تم التأكيد</option>
+            <option value="rejected" ${booking.status === "rejected" ? "selected" : ""}>مرفوض</option>
+          </select>
+        </div>
       </article>`;
     }).join("");
   }
+
+  bookingList?.addEventListener("change", async (event) => {
+    const select = event.target.closest("select[data-booking-status]");
+    if (!select || !isAdmin) return;
+    const bookingId = select.dataset.id;
+    const nextStatus = select.value;
+    select.disabled = true;
+    bookingMessage.textContent = "جاري تحديث حالة الطلب...";
+    const { error } = await client.from("booking_requests")
+      .update({ status: nextStatus })
+      .eq("id", bookingId);
+    select.disabled = false;
+    if (error) {
+      bookingMessage.textContent = "تعذر تحديث حالة الطلب: " + error.message;
+      await loadBookings();
+      return;
+    }
+    bookingMessage.textContent = "تم تحديث حالة طلب الحجز.";
+    await loadBookings();
+  });
 
   $("refreshBtn").addEventListener("click", async () => { await loadSlots(); await loadBookings(); });
   $("signOutBtn").addEventListener("click", async () => {
