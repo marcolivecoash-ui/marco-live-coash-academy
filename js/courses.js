@@ -7,10 +7,10 @@
   if(!session){location.replace("login.html?next="+encodeURIComponent(location.href));return;}
   $("signOutBtn").onclick=async()=>{await client.auth.signOut();location.replace("login.html");};
   $("menuBtn").onclick=()=>$("nav").classList.toggle("active");
-  const {data,error}=await client.from("courses").select("id,title_ar,title_en,description_ar,description_en,price_egp,thumbnail_path").eq("is_published",true).order("created_at",{ascending:false});
+  const {data,error}=await client.from("courses").select("id,title_ar,title_en,description_ar,description_en,price_egp").eq("is_published",true).order("created_at",{ascending:false});
   if(error){grid.innerHTML='<div class="course-empty">تعذر تحميل الكورسات: '+esc(error.message)+'</div>';return;}
   if(!data?.length){grid.innerHTML='<div class="course-empty">لا توجد كورسات متاحة حاليًا. تابعنا قريبًا.</div>';return;}
-  grid.innerHTML=data.map(c=>'<article class="course-card"><div class="course-cover">'+(c.thumbnail_path?'<img src="'+esc(c.thumbnail_path)+'" alt="">':'✦')+'</div><div class="course-body"><h2>'+esc(c.title_ar)+'</h2><p>'+esc(c.description_ar||"كورس تدريبي من Marco Live Coach.")+'</p><div class="course-price">'+Number(c.price_egp).toLocaleString("ar-EG")+' جنيه</div><div class="receipt-area"><label>صورة إيصال إنستا باي</label><input type="file" accept="image/jpeg,image/png,image/webp" data-receipt="'+esc(c.id)+'"><button class="btn btn-primary" type="button" data-buy="'+esc(c.id)+'">شراء الكورس وإرسال الإيصال</button></div></div></article>').join("");
+  grid.innerHTML=data.map(c=>'<article class="course-card"><div class="course-cover">'+✦+'</div><div class="course-body"><h2>'+esc(c.title_ar)+'</h2><p>'+esc(c.description_ar||"كورس تدريبي من Marco Live Coach.")+'</p><div class="course-price">'+Number(c.price_egp).toLocaleString("ar-EG")+' جنيه</div><div class="receipt-area"><label>صورة إيصال إنستا باي</label><input type="file" accept="image/jpeg,image/png,image/webp" data-receipt="'+esc(c.id)+'"><button class="btn btn-primary" type="button" data-buy="'+esc(c.id)+'">شراء الكورس وإرسال الإيصال</button></div></div></article>').join("");
  }
  grid.addEventListener("click",async e=>{
   const btn=e.target.closest("button[data-buy]");if(!btn)return;
