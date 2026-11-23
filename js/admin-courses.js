@@ -97,7 +97,9 @@
       const statusLabel = purchase.status === "confirmed" ? "مقبول" :
         purchase.status === "rejected" ? "مرفوض" : "معلق";
       return '<article class="manage-item"><strong>' + esc(purchase.courses?.title_ar || "كورس") + '</strong>' +
-        '<small>رقم العميل: ' + esc(purchase.user_id) + " · " +
+        '<small>اسم العميل: ' + esc(purchase.customer_name || "غير مسجل") + '</small>' +
+        '<small>رقم التليفون / واتساب: ' + esc(purchase.customer_phone || "غير مسجل") + '</small>' +
+        '<small>رقم الحساب: ' + esc(purchase.user_id) + " · " +
         Number(purchase.courses?.price_egp || 0).toLocaleString("en-US") + ' EGP</small>' +
         '<small>الحالة: ' + statusLabel + " · فحص الإيصال: " +
         esc(purchase.receipt_check_status || "لم يتم الفحص") + '</small>' + receipt +
@@ -111,7 +113,7 @@
     const root = $("purchaseList");
     root.innerHTML = '<div class="manage-empty">جاري تحميل الطلبات...</div>';
     const { data, error } = await client.from("course_purchases")
-      .select("id,user_id,status,payment_receipt_path,created_at,receipt_check_status,courses(title_ar,price_egp)")
+      .select("id,user_id,customer_name,customer_phone,status,payment_receipt_path,created_at,receipt_check_status,courses(title_ar,price_egp)")
       .order("created_at", { ascending: false });
     if (error) { root.textContent = error.message; return; }
     cachedPurchases = await Promise.all((data || []).map(async purchase => {
