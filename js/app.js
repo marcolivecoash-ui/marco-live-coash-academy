@@ -8,6 +8,11 @@ document.addEventListener("DOMContentLoaded", () => {
     configScript.onload = () => {
       const authScript = document.createElement("script");
       authScript.src = "js/auth.js";
+      authScript.onload = () => {
+        const editorScript = document.createElement("script");
+        editorScript.src = "js/inline-editor.js";
+        document.body.appendChild(editorScript);
+      };
       document.body.appendChild(authScript);
     };
     document.body.appendChild(configScript);
