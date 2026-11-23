@@ -53,9 +53,10 @@
       return;
     }
     list.innerHTML = data.map((slot) => {
-      const statusLabel = slot.status === "available" ? "متاح" : slot.status === "closed" ? "مغلق" : "محجوز";
+      const statusLabel = slot.status === "available" ? "متاح" : slot.status === "closed" ? "مغلق" : slot.status === "pending" ? "بانتظار الدفع" : "محجوز";
       const toggleLabel = slot.status === "available" ? "إغلاق الموعد" : "فتح الموعد";
-      const toggleDisabled = slot.status === "booked";
+      const toggleDisabled = slot.status === "booked" || slot.status === "pending";
+      const deleteDisabled = slot.status === "booked" || slot.status === "pending";
       return `<article class="slot-item">
         <div class="slot-meta">
           <strong>${escapeHtml(formatDate(slot.starts_at))}</strong>
@@ -64,7 +65,7 @@
         </div>
         <div class="slot-actions">
           <button type="button" data-action="toggle" data-id="${escapeHtml(slot.id)}" ${toggleDisabled ? "disabled" : ""}>${toggleLabel}</button>
-          <button type="button" class="danger" data-action="delete" data-id="${escapeHtml(slot.id)}">حذف</button>
+          <button type="button" class="danger" data-action="delete" data-id="${escapeHtml(slot.id)}" ${deleteDisabled ? "disabled" : ""}>حذف</button>
         </div>
       </article>`;
     }).join("");
