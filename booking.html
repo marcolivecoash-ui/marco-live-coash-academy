@@ -6,6 +6,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Book a Session | Marco Live Coach</title>
   <link rel="stylesheet" href="css/style.css">
+
+<style>
+.available-slots{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;max-width:950px;margin:0 auto}.available-slot{position:relative;display:block;cursor:pointer}.available-slot input{position:absolute;opacity:0;pointer-events:none}.available-slot-card{height:100%;padding:18px;border:1px solid var(--border);border-radius:17px;background:rgba(255,255,255,.045);backdrop-filter:blur(20px);transition:.2s}.available-slot input:checked+.available-slot-card{border-color:var(--cyan);box-shadow:0 0 0 2px rgba(40,217,255,.13),inset 0 1px rgba(255,255,255,.16)}.available-slot-card strong,.available-slot-card span{display:block}.available-slot-card span{color:var(--muted);font-size:14px;margin-top:5px}.slot-price{color:var(--cyan)!important;font-weight:800}.slot-empty{padding:24px;text-align:center;color:var(--muted);border:1px dashed var(--border);border-radius:16px;grid-column:1/-1}.available-slot input:focus-visible+.available-slot-card{outline:2px solid var(--cyan);outline-offset:3px}
+</style>
 </head>
 <body>
 <header class="site-header">
@@ -31,6 +35,18 @@
       <span class="eyebrow" data-en="BOOK YOUR SESSION" data-ar="احجز جلستك">BOOK YOUR SESSION</span>
       <h1 data-en="Your Next Step Starts Here" data-ar="خطوتك القادمة تبدأ هنا">Your Next Step Starts Here</h1>
       <p data-en="Complete the form and send your booking request. We will contact you to confirm the details." data-ar="املأ النموذج وأرسل طلب الحجز، وسنتواصل معك لتأكيد التفاصيل.">Complete the form and send your booking request. We will contact you to confirm the details.</p>
+    </div>
+  </section>
+
+  <section class="section" id="availableAppointments">
+    <div class="container">
+      <div class="section-header center">
+        <span class="eyebrow" data-en="AVAILABLE APPOINTMENTS" data-ar="المواعيد المتاحة">AVAILABLE APPOINTMENTS</span>
+        <h2 data-en="Choose Your Appointment" data-ar="اختر موعد جلستك">Choose Your Appointment</h2>
+        <p data-en="Select one of the available times below. Only open appointments are shown." data-ar="اختار موعدًا من المواعيد المتاحة بالأسفل. المواعيد المفتوحة فقط هي التي ستظهر.">Select one of the available times below. Only open appointments are shown.</p>
+      </div>
+      <div id="availableSlots" class="available-slots" aria-live="polite"><div class="admin-empty">جاري تحميل المواعيد...</div></div>
+      <p id="slotSelectionMessage" class="notice" role="status">اختار موعدًا للمتابعة.</p>
     </div>
   </section>
 
@@ -67,7 +83,7 @@
 
           <div class="form-group full">
             <label for="date" data-en="Preferred Date" data-ar="التاريخ المفضل">Preferred Date</label>
-            <input id="date" name="date" type="date" required>
+            <input id="date" name="date" type="date" required readonly><input id="selectedSlotId" name="slot_id" type="hidden"><input id="selectedSlotLabel" name="slot_label" type="hidden">
           </div>
 
           <div class="form-group full">
@@ -96,6 +112,6 @@
     <div class="footer-links"><a href="services.html" data-en="Services" data-ar="الخدمات">Services</a><a href="contact.html" data-en="Contact" data-ar="التواصل">Contact</a></div>
   </div>
 </footer>
-<script src="js/app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>\n<script src="js/supabase-config.js"></script>\n<script src="js/booking-slots.js"></script>\n<script src="js/app.js"></script>
 </body>
 </html>
