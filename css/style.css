@@ -630,3 +630,66 @@ img {
   .auth-user { display: none; }
   #signOutBtn { padding: 8px 10px; font-size: 12px; }
 }
+
+
+/* Calmer header booking link, anchored to the left side */
+.header-inner {
+  direction: ltr;
+}
+.header-actions { order: 0; }
+.logo { order: 1; }
+.nav { order: 2; }
+.header-actions .header-booking {
+  color: #c8eaff;
+  background: rgba(22,119,255,.08);
+  border: 1px solid rgba(40,217,255,.22);
+  box-shadow: none;
+  padding: 10px 17px;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 10px;
+}
+.header-actions .header-booking:hover {
+  background: rgba(22,119,255,.15);
+  border-color: rgba(40,217,255,.48);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(22,119,255,.12);
+}
+.header-inner .nav { direction: inherit; }
+
+/* Soft entrance and scroll-reveal motion */
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1);
+  will-change: opacity, transform;
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.cards-grid .card:nth-child(2),
+.steps > :nth-child(2) { transition-delay: .10s; }
+.cards-grid .card:nth-child(3),
+.steps > :nth-child(3) { transition-delay: .18s; }
+.hero h1 span { display: inline-block; }
+a, button, .card, .highlight-box, .contact-item {
+  transition-duration: .25s;
+}
+@media (max-width: 700px) {
+  .header-inner { direction: ltr; }
+  .header-actions .header-booking {
+    display: inline-flex;
+    padding: 8px 10px;
+    font-size: 11px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+  .reveal { opacity: 1; transform: none; }
+}
