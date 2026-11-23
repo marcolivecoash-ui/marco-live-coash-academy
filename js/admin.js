@@ -37,6 +37,20 @@
     return new Intl.DateTimeFormat("ar-EG", { dateStyle:"medium", timeStyle:"short" }).format(new Date(value));
   }
 
+  function whatsappUrl(phone, booking, slot) {
+    let digits = String(phone || "").replace(/\\D/g, "");
+    if (digits.startsWith("00")) digits = digits.slice(2);
+    if (digits.startsWith("0")) digits = "20" + digits.slice(1);
+    else if (/^1[0125]\\d{8}$/.test(digits)) digits = "20" + digits;
+    if (!/^\\d{10,15}$/.test(digits) || digits.startsWith("0")) return "";
+    const when = slot?.starts_at ? formatDate(slot.starts_at) : "الموعد المتفق عليه";
+    const message = "أهلاً " + booking.customer_name + " 🌟\\n" +
+      "تم تأكيد حجز جلستك مع Marco Live Coach بنجاح.\\n" +
+      "موعد الجلسة: " + when + "\\n" +
+      "نتشرف بيك ونتمنى لك تجربة موفقة!";
+    return "https://wa.me/" + digits + "?text=" + encodeURIComponent(message);
+  }
+
   async function loadSlots() {
     list.innerHTML = '<div class="admin-empty">جاري تحميل المواعيد...</div>';
     const { data, error } = await client.from("availability_slots")
@@ -171,6 +185,8 @@
         ${canReview ? `<div class="slot-actions">
           <button type="button" data-booking-review="confirmed" data-id="${escapeHtml(booking.id)}">تأكيد الدفع والحجز</button>
           <button type="button" class="danger" data-booking-review="rejected" data-id="${escapeHtml(booking.id)}">رفض الطلب</button>
+        </div>` : booking.status === "confirmed" ? `<div class="slot-actions">
+          ${whatsappUrl(booking.customer_phone, booking, slot) ? `<a href="${escapeHtml(whatsappUrl(booking.customer_phone, booking, slot))}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;justify-content:center;padding:10px 16px;border-radius:14px;background:#25D366;color:#07130b;font-weight:700;text-decoration:none">إرسال تأكيد الحجز على واتساب</a>` : `<small>رقم الهاتف غير صالح لفتح واتساب؛ راجع رقم العميل.</small>`}
         </div>` : ""}
       </article>`;
     }));
