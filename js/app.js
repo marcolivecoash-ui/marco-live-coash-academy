@@ -88,22 +88,52 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const bookingForm = document.getElementById("bookingForm");
   if (bookingForm) {
-    bookingForm.addEventListener("submit", (event) => {
+    bookingForm.addEventListener("submit", async (event) => {
       event.preventDefault();
       const formData = new FormData(bookingForm);
-      const name = formData.get("name");
-      const email = formData.get("email");
-      const phone = formData.get("phone");
-      const session = formData.get("session");
-      const date = formData.get("date");
-      const slotLabel = formData.get("slot_label");
-      const details = formData.get("details");
-      const message = currentLang === "ar"
-        ? `طلب حجز جلسة جديدة\n\nالموعد المختار: ${slotLabel || "لم يتم اختيار موعد"}\nالاسم: ${name}\nالبريد: ${email}\nالهاتف: ${phone}\nنوع الجلسة: ${session}\nالتاريخ المفضل: ${date}\nالتفاصيل: ${details}`
-        : `New Booking Request\n\nSelected appointment: ${slotLabel || "No appointment selected"}\nName: ${name}\nEmail: ${email}\nPhone: ${phone}\nSession: ${session}\nPreferred Date: ${date}\nDetails: ${details}`;
-      if (!formData.get("slot_id")) { alert(currentLang === "ar" ? "من فضلك اختار موعدًا متاحًا أولًا." : "Please select an available appointment first."); return; }
-      const whatsappNumber = "201000000000";
-      window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, "_blank");
+      const messageBox = document.getElementById("bookingMessage");
+      const slotId = formData.get("slot_id");
+      if (!slotId) {
+        messageBox.textContent = currentLang === "ar" ? "من فضلك اختار موعدًا متاحًا أولًا." : "Please select an available appointment first.";
+        return;
+      }
+      const client = window.marcoSupabase;
+      if (!client) {
+        messageBox.textContent = currentLang === "ar" ? "تعذر الاتصال بالخدمة. حدّث الصفحة وحاول مرة أخرى." : "The service is not ready. Refresh the page and try again.";
+        return;
+      }
+      const submitButton = bookingForm.querySelector('button[type="submit"]');
+      submitButton.disabled = true;
+      messageBox.textContent = currentLang === "ar" ? "جاري إرسال طلب الحجز..." : "Sending your booking request...";
+      const { data, error } = await client.rpc("book_marco_slot", {
+        p_slot_id: slotId,
+        p_customer_name: formData.get("name"),
+        p_customer_email: formData.get("email"),
+        p_customer_phone: formData.get("phone"),
+        p_session_type: formData.get("session"),
+        p_details: formData.get("details") || ""
+      });
+      submitButton.disabled = false;
+      if (error) {
+        messageBox.textContent = currentLang === "ar"
+          ? (error.message.includes("no longer available") ? "عذرًا، هذا الموعد لم يعد متاحًا. اختر موعدًا آخر." : "تعذر إرسال الطلب: " + error.message)
+          : "Could not send request: " + error.message;
+        return;
+      }
+      bookingForm.reset();
+      document.getElementById("selectedSlotId").value = "";
+      document.getElementById("selectedSlotLabel").value = "";
+      document.getElementById("date").value = "";
+      document.getElementById("availableSlots").innerHTML = '<div class="slot-empty">تم إرسال الطلب. جاري تحديث المواعيد...</div>';
+      messageBox.textContent = currentLang === "ar"
+        ? "تم إرسال طلب الحجز بنجاح! سيظهر لدى الأدمن لمراجعته. لم يتم تأكيد الحجز أو الدفع بعد."
+        : "Your booking request was sent successfully. The admin will review it. Your booking and payment are not confirmed yet.";
+      const slotsScript = document.querySelector('script[src="js/booking-slots.js"]');
+      if (slotsScript) {
+        const refresh = document.createElement("script");
+        refresh.src = "js/booking-slots.js";
+        document.body.appendChild(refresh);
+      }
     });
   }
   changeLanguage(currentLang);
